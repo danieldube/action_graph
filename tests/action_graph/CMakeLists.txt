@@ -1,0 +1,9 @@
+add_executable(action_graph_test)
+target_sources(action_graph_test PRIVATE action_test.cpp)
+
+target_link_libraries(action_graph_test PRIVATE GTest::gtest_main
+                                                action_graph::action_graph)
+
+include(CTest)
+include(GoogleTest)
+gtest_discover_tests(action_graph_test)
