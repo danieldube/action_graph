@@ -3,6 +3,7 @@
 
 #include "executor_log.h"
 #include <action_graph/parallel_actions.h>
+#include <algorithm>
 #include <gtest/gtest.h>
 
 using action_graph::Action;
