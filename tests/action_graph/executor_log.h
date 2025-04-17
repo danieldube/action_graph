@@ -28,7 +28,11 @@ public:
 
   using action_graph::Action::Action;
 
-  void Execute() override { log_.Log(name); }
+  void Execute() override {
+    log_.Log("start: " + name);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    log_.Log("stop: " + name);
+  }
 
 private:
   ExecutorLog &log_;

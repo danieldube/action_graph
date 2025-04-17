@@ -5,7 +5,7 @@
 using action_graph::Action;
 using action_graph::ActionSequence;
 
-TEST(ActionSequence, test) {
+TEST(ActionSequence, execute) {
   ExecutorLog log;
   auto action1 = std::make_unique<LoggingAction>("action1", std::ref(log));
   auto action2 = std::make_unique<LoggingAction>("action2", std::ref(log));
@@ -15,5 +15,9 @@ TEST(ActionSequence, test) {
                                         std::move(action2), std::move(action3));
   sequence.Execute();
 
-  EXPECT_EQ(log.GetLog().size(), 3);
+  std::vector<std::string> expected_log = {"start: action1", "stop: action1",
+                                           "start: action2", "stop: action2",
+                                           "start: action3", "stop: action3"};
+
+  EXPECT_EQ(log.GetLog(), expected_log);
 }

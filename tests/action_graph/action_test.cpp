@@ -5,22 +5,33 @@ using action_graph::Action;
 
 class TestAction final : public Action {
 public:
-  TestAction(std::string name, bool &mark_when_execute)
-      : Action(std::move(name)), mark_when_execute_{mark_when_execute} {}
-  using action_graph::Action::Action;
-  ~TestAction() override {
-    std::cout << "TestAction destructor called for: " << name << std::endl;
-  }
+  TestAction(std::string name, bool &mark_when_execute, bool &mark_when_deleted)
+      : Action(std::move(name)), mark_when_execute_{mark_when_execute},
+        mark_when_deleted_{mark_when_deleted} {}
+
+  ~TestAction() override { mark_when_deleted_ = true; }
 
   void Execute() override { mark_when_execute_ = true; }
 
 private:
   bool &mark_when_execute_;
+  bool &mark_when_deleted_;
 };
 
-TEST(simple, test) {
+TEST(Action, execute) {
   bool was_executed = false;
-  TestAction action("test_action", was_executed);
+  bool was_deleted = false;
+  TestAction action("test_action", was_executed, was_deleted);
   action.Execute();
   EXPECT_TRUE(was_executed);
+}
+
+TEST(Action, delete_via_base_class) {
+  bool was_executed = false;
+  bool was_deleted = false;
+  {
+    std::unique_ptr<Action> action =
+        std::make_unique<TestAction>("test_action", was_executed, was_deleted);
+  }
+  EXPECT_TRUE(was_deleted);
 }

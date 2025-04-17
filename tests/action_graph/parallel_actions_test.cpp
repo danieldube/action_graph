@@ -8,7 +8,7 @@
 using action_graph::Action;
 using action_graph::ParallelActions;
 
-TEST(ParallelActions, test) {
+TEST(ParallelActions, execute) {
   ExecutorLog log;
   auto action1 = std::make_unique<LoggingAction>("action1", log);
   auto action2 = std::make_unique<LoggingAction>("action2", log);
@@ -18,7 +18,13 @@ TEST(ParallelActions, test) {
                                         std::move(action2), std::move(action3));
   actions.Execute();
 
-  EXPECT_EQ(log.GetLog().size(), 3);
+  auto entries = log.GetLog();
+  std::for_each_n(std::begin(entries), 3, [](const auto &entry) {
+    EXPECT_EQ(entry.find("start: "), 0);
+  });
+  std::for_each_n(std::begin(entries) + 3, 3, [](const auto &entry) {
+    EXPECT_EQ(entry.find("stop: "), 0);
+  });
 }
 
-#endif ACTION_GRAPH_TESTS_PARALLEL_ACTIONS_TEST_H_
+#endif // ACTION_GRAPH_TESTS_PARALLEL_ACTIONS_TEST_H_
