@@ -10,18 +10,6 @@
 
 namespace action_graph {
 
-class ExecutionError : public std::logic_error {
-public:
-  using std::logic_error::logic_error;
-};
-
-struct SequenceEntry {
-  explicit SequenceEntry(std::unique_ptr<Action> action_to_call)
-      : action(std::move(action_to_call)) {}
-  std::unique_ptr<Action> action;
-  std::atomic<bool> is_executed{false};
-};
-
 class ActionSequence final : public Action {
 public:
   using Action::Action;
