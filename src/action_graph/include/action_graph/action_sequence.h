@@ -32,6 +32,10 @@ public:
     (sequence_.emplace_back(std::move(actions)), ...);
   }
 
+  explicit ActionSequence(std::string name,
+                          std::vector<std::unique_ptr<Action>> actions)
+      : Action(std::move(name)), sequence_(std::move(actions)) {}
+
   void Execute() override {
     for (auto &action : sequence_) {
       action->Execute();

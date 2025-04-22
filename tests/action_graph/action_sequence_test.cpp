@@ -5,6 +5,38 @@
 using action_graph::Action;
 using action_graph::ActionSequence;
 
+TEST(ActionSequence, create_from_variadic_parameters) {
+  ExecutorLog log;
+  auto action1 = std::make_unique<LoggingAction>("action1", std::ref(log));
+  auto action2 = std::make_unique<LoggingAction>("action2", std::ref(log));
+
+  ActionSequence sequence("test_sequence", std::move(action1),
+                          std::move(action2));
+
+  sequence.Execute();
+
+  std::vector<std::string> expected_log = {"start: action1", "stop: action1",
+                                           "start: action2", "stop: action2"};
+
+  EXPECT_EQ(log.GetLog(), expected_log);
+}
+
+TEST(ActionSequence, create_from_vector) {
+  ExecutorLog log;
+  std::vector<std::unique_ptr<Action>> actions;
+  actions.push_back(std::make_unique<LoggingAction>("action1", std::ref(log)));
+  actions.push_back(std::make_unique<LoggingAction>("action2", std::ref(log)));
+
+  ActionSequence sequence("test_sequence", std::move(actions));
+
+  sequence.Execute();
+
+  std::vector<std::string> expected_log = {"start: action1", "stop: action1",
+                                           "start: action2", "stop: action2"};
+
+  EXPECT_EQ(log.GetLog(), expected_log);
+}
+
 TEST(ActionSequence, execute) {
   ExecutorLog log;
   auto action1 = std::make_unique<LoggingAction>("action1", std::ref(log));
