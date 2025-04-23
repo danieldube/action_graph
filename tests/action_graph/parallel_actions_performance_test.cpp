@@ -1,5 +1,6 @@
 #include <action_graph/parallel_actions.h>
 #include <action_graph/single_action.h>
+#include <algorithm>
 #include <gtest/gtest.h>
 
 using action_graph::Action;
