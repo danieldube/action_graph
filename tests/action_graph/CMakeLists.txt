@@ -1,6 +1,4 @@
 add_executable(action_graph_test)
-find_package(yaml-cpp REQUIRED)
-
 target_sources(
   action_graph_test
   PRIVATE action_test.cpp
@@ -12,9 +10,8 @@ target_sources(
           action_sequence_performance_test.cpp
           parallel_actions_performance_test.cpp)
 
-target_link_libraries(
-  action_graph_test PRIVATE GTest::gtest_main action_graph::action_graph
-                            yaml-cpp::yaml-cpp)
+target_link_libraries(action_graph_test PRIVATE GTest::gtest_main
+                                                action_graph::action_graph)
 
 include(CTest)
 include(GoogleTest)
