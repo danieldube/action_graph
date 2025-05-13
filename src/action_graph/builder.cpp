@@ -4,18 +4,30 @@
 namespace action_graph {
 namespace builder {
 
-std::vector<ActionObject>
-BuildActionGraph(const std::string &yaml_string,
-                 const ActionCreators &action_creators) {
-  std::vector<ActionObject> created_actions;
-  YAML::Node config = YAML::Load(yaml_string);
-  auto action = config["trigger"]["action"];
+ActionObject BuildTrigger(const YAML::Node &node,
+                          const ActionBuilders &action_builders) {
+  auto trigger_name = node["name"].as<std::string>();
+  auto trigger_period_string = node["period"].as<std::string>();
+  auto trigger_period = ParseDuration(trigger_period_string);
+
+  auto action = node["action"];
   auto action_type = action["type"].as<std::string>();
-  auto creator = action_creators.find(action_type);
-  if (creator == action_creators.end()) {
+  auto creator = action_builders.find(action_type);
+  if (creator == action_builders.end()) {
     throw std::runtime_error("Action type not found: " + action_type);
   }
-  created_actions.push_back(creator->second(action));
+  return creator->second(action);
+}
+
+std::vector<ActionObject>
+BuildActionGraph(const std::string &yaml_string,
+                 const ActionBuilders &action_builders) {
+  std::vector<ActionObject> created_actions;
+  YAML::Node config = YAML::Load(yaml_string);
+  for (const auto &trigger : config) {
+    created_actions.push_back(
+        BuildTrigger(trigger["trigger"], action_builders));
+  }
   return created_actions;
 }
 
