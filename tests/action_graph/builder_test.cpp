@@ -5,13 +5,20 @@
 #include <yaml-cpp/yaml.h>
 
 const std::string kSimpleGraphYml = R"(
-trigger:
-  name: ten_milliseconds
-  period: 10ms
-  action:
-    name: action
-    type: print_action
-    message: "action executed"
+- trigger:
+    name: one_second
+    period: 1 seconds
+    action:
+      name: action
+      type: print_action
+      message: "one second executed"
+- trigger:
+    name: two_seconds
+    period: 2 seconds
+    action:
+      name: action
+      type: print_action
+      message: "two seconds executed"
 )";
 
 class CallbackAction final : public action_graph::Action {
@@ -41,15 +48,15 @@ TEST(BuildActionGraph, simple_graph_yml) {
   using action_graph::builder::BuildActionGraph;
 
   std::string message;
-  const action_graph::builder::ActionCreators actions{
+  const action_graph::builder::ActionBuilders actions{
       {std::string("print_action"), [&message](const YAML::Node &node) {
          return CreateCallbackActionFromYaml(
              node, [&message](const std::string &msg) { message = msg; });
        }}};
   auto graph = BuildActionGraph(kSimpleGraphYml, actions);
-  ASSERT_EQ(graph.size(), 1);
+  ASSERT_EQ(graph.size(), 2);
   graph.front()->Execute();
-  EXPECT_EQ(message, "action executed");
+  EXPECT_EQ(message, "one second executed");
 }
 
 TEST(ParseDuration, seconds) {
