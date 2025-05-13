@@ -2,6 +2,7 @@
 #define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_H_
 
 #include <action_graph/action.h>
+#include <chrono>
 #include <functional>
 #include <map>
 #include <memory>
@@ -17,6 +18,8 @@ using ActionCreators = std::map<std::string, CreatorFunction>;
 std::vector<ActionObject>
 BuildActionGraph(const std::string &yaml_string,
                  const ActionCreators &action_creators);
+
+std::chrono::duration<double> ParseDuration(const std::string &duration_str);
 } // namespace builder
 } // namespace action_graph
 

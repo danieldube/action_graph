@@ -4,7 +4,7 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 
-const std::string simple_graph_yml = R"(
+const std::string kSimpleGraphYml = R"(
 trigger:
   name: ten_milliseconds
   period: 10ms
@@ -46,8 +46,28 @@ TEST(BuildActionGraph, simple_graph_yml) {
          return CreateCallbackActionFromYaml(
              node, [&message](const std::string &msg) { message = msg; });
        }}};
-  auto graph = BuildActionGraph(simple_graph_yml, actions);
+  auto graph = BuildActionGraph(kSimpleGraphYml, actions);
   ASSERT_EQ(graph.size(), 1);
   graph.front()->Execute();
   EXPECT_EQ(message, "action executed");
+}
+
+TEST(ParseDuration, seconds) {
+  EXPECT_EQ(action_graph::builder::ParseDuration("10 seconds"),
+            std::chrono::seconds(10));
+}
+
+TEST(ParseDuration, milliseconds) {
+  EXPECT_EQ(action_graph::builder::ParseDuration("10 milliseconds"),
+            std::chrono::milliseconds(10));
+}
+
+TEST(ParseDuration, microseconds) {
+  EXPECT_EQ(action_graph::builder::ParseDuration("10 microseconds"),
+            std::chrono::microseconds(10));
+}
+
+TEST(ParseDuration, nanoseconds) {
+  EXPECT_EQ(action_graph::builder::ParseDuration("10 nanoseconds"),
+            std::chrono::nanoseconds(10));
 }
