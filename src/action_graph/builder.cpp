@@ -5,28 +5,43 @@ namespace action_graph {
 namespace builder {
 
 ActionObject BuildTrigger(const YAML::Node &node,
-                          const ActionBuilders &action_builders) {
+                          const ActionBuilder &action_builder) {
   auto trigger_name = node["name"].as<std::string>();
   auto trigger_period_string = node["period"].as<std::string>();
   auto trigger_period = ParseDuration(trigger_period_string);
+  return action_builder(node);
+}
 
+ActionBuilder::ActionBuilder(
+    action_graph::builder::BuilderFunctions builder_functions)
+    : builder_functions_(std::move(builder_functions)) {}
+
+ActionObject ActionBuilder::operator()(const YAML::Node &node) const {
   auto action = node["action"];
-  auto action_type = action["type"].as<std::string>();
-  auto creator = action_builders.find(action_type);
-  if (creator == action_builders.end()) {
-    throw std::runtime_error("Action type not found: " + action_type);
+  if (!action) {
+    throw NodeParsingError(
+        "The ActionBuilder can just be called on action nodes.", node);
   }
-  return creator->second(action);
+  auto action_type = action["type"].as<std::string>();
+  if (action_type.empty()) {
+    throw std::runtime_error("Type of the action is not defined.");
+  }
+  auto builder = builder_functions_.find(action_type);
+  if (builder == builder_functions_.end()) {
+    throw std::runtime_error("No builder for defined for " + action_type + ".");
+  }
+  const auto &builder_function = builder->second;
+  return builder_function(action, *this);
 }
 
 std::vector<ActionObject>
 BuildActionGraph(const std::string &yaml_string,
-                 const ActionBuilders &action_builders) {
+                 const BuilderFunctions &builder_functions) {
   std::vector<ActionObject> created_actions;
   YAML::Node config = YAML::Load(yaml_string);
+  ActionBuilder action_builder(builder_functions);
   for (const auto &trigger : config) {
-    created_actions.push_back(
-        BuildTrigger(trigger["trigger"], action_builders));
+    created_actions.push_back(BuildTrigger(trigger["trigger"], action_builder));
   }
   return created_actions;
 }
