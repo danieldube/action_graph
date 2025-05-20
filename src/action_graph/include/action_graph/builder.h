@@ -26,10 +26,10 @@ private:
   BuilderFunctions builder_functions_;
 };
 
-class NodeParsingError : public std::runtime_error {
+class YamlParsingError : public std::runtime_error {
 public:
-  explicit NodeParsingError(const std::string &message, const YAML::Node &node)
-      : std::runtime_error("Error parsing yaml node: " + message + "\n" +
+  explicit YamlParsingError(const std::string &message, const YAML::Node &node)
+      : std::runtime_error("Error parsing yaml node: " + message + " :\n" +
                            YAML::Dump(node)) {}
 };
 

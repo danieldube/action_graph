@@ -8,7 +8,7 @@ ActionObject BuildTrigger(const YAML::Node &node,
                           const ActionBuilder &action_builder) {
   const auto &trigger = node["trigger"];
   if (!trigger) {
-    throw NodeParsingError("Only trigger nodes are allowed on top level.",
+    throw YamlParsingError("Only trigger nodes are allowed on top level.",
                            node);
   }
   auto trigger_name = trigger["name"].as<std::string>();
@@ -24,12 +24,12 @@ ActionBuilder::ActionBuilder(
 ActionObject ActionBuilder::operator()(const YAML::Node &node) const {
   auto action = node["action"];
   if (!action) {
-    throw NodeParsingError(
+    throw YamlParsingError(
         "The ActionBuilder can just be called on action nodes.", node);
   }
   auto action_type = action["type"].as<std::string>();
   if (action_type.empty()) {
-    throw NodeParsingError("Type of the action is not defined.", action);
+    throw YamlParsingError("Type of the action is not defined.", action);
   }
   auto builder = builder_functions_.find(action_type);
   if (builder == builder_functions_.end()) {
