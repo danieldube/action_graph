@@ -24,11 +24,11 @@ ActionObject ActionBuilder::operator()(const YAML::Node &node) const {
   }
   auto action_type = action["type"].as<std::string>();
   if (action_type.empty()) {
-    throw std::runtime_error("Type of the action is not defined.");
+    throw NodeParsingError("Type of the action is not defined.", action);
   }
   auto builder = builder_functions_.find(action_type);
   if (builder == builder_functions_.end()) {
-    throw std::runtime_error("No builder for defined for " + action_type + ".");
+    throw BuildError("No builder defined for " + action_type + ".");
   }
   const auto &builder_function = builder->second;
   return builder_function(action, *this);

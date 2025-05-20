@@ -88,6 +88,8 @@ TEST(ActionBuilder, simple_graph) {
   ASSERT_EQ(action.size(), 2);
   action.front()->Execute();
   EXPECT_EQ(message, "one second executed");
+  action.back()->Execute();
+  EXPECT_EQ(message, "two seconds executed");
 }
 
 TEST(ParseDuration, seconds) {

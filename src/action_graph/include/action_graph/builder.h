@@ -29,8 +29,13 @@ private:
 class NodeParsingError : public std::runtime_error {
 public:
   explicit NodeParsingError(const std::string &message, const YAML::Node &node)
-      : std::runtime_error("Node parsing error: " + message + "\n" +
+      : std::runtime_error("Error parsing yaml node: " + message + "\n" +
                            YAML::Dump(node)) {}
+};
+
+class BuildError : public std::runtime_error {
+public:
+  using std::runtime_error::runtime_error;
 };
 
 std::vector<ActionObject>
