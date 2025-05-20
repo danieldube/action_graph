@@ -40,8 +40,13 @@ BuildActionGraph(const std::string &yaml_string,
   std::vector<ActionObject> created_actions;
   YAML::Node config = YAML::Load(yaml_string);
   ActionBuilder action_builder(builder_functions);
-  for (const auto &trigger : config) {
-    created_actions.push_back(BuildTrigger(trigger["trigger"], action_builder));
+  for (const auto &entry : config) {
+    const auto &trigger = entry["trigger"];
+    if (!trigger) {
+      throw NodeParsingError("Only trigger nodes are allowed on top level.",
+                             entry);
+    }
+    created_actions.push_back(BuildTrigger(trigger, action_builder));
   }
   return created_actions;
 }
