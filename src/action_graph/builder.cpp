@@ -6,10 +6,15 @@ namespace builder {
 
 ActionObject BuildTrigger(const YAML::Node &node,
                           const ActionBuilder &action_builder) {
-  auto trigger_name = node["name"].as<std::string>();
-  auto trigger_period_string = node["period"].as<std::string>();
+  const auto &trigger = node["trigger"];
+  if (!trigger) {
+    throw NodeParsingError("Only trigger nodes are allowed on top level.",
+                           node);
+  }
+  auto trigger_name = trigger["name"].as<std::string>();
+  auto trigger_period_string = trigger["period"].as<std::string>();
   auto trigger_period = ParseDuration(trigger_period_string);
-  return action_builder(node);
+  return action_builder(trigger);
 }
 
 ActionBuilder::ActionBuilder(
@@ -40,14 +45,11 @@ BuildActionGraph(const std::string &yaml_string,
   std::vector<ActionObject> created_actions;
   YAML::Node config = YAML::Load(yaml_string);
   ActionBuilder action_builder(builder_functions);
-  for (const auto &entry : config) {
-    const auto &trigger = entry["trigger"];
-    if (!trigger) {
-      throw NodeParsingError("Only trigger nodes are allowed on top level.",
-                             entry);
-    }
-    created_actions.push_back(BuildTrigger(trigger, action_builder));
-  }
+  std::transform(config.begin(), config.end(),
+                 std::back_inserter(created_actions),
+                 [&action_builder](const YAML::Node &entry) {
+                   return BuildTrigger(entry, action_builder);
+                 });
   return created_actions;
 }
 
