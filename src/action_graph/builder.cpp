@@ -1,5 +1,7 @@
 #include <action_graph/action.h>
+#include <action_graph/action_sequence.h>
 #include <action_graph/builder.h>
+#include <action_graph/parallel_actions.h>
 
 namespace action_graph {
 namespace builder {
@@ -19,7 +21,32 @@ ActionObject BuildTrigger(const YAML::Node &node,
 
 ActionBuilder::ActionBuilder(
     action_graph::builder::BuilderFunctions builder_functions)
-    : builder_functions_(std::move(builder_functions)) {}
+    : builder_functions_(std::move(builder_functions)) {
+  builder_functions_.emplace(
+      "sequential_actions",
+      [](const YAML::Node &node, const ActionBuilder &action_builder) {
+        std::vector<ActionObject> actions;
+        std::transform(node["actions"].begin(), node["actions"].end(),
+                       std::back_inserter(actions),
+                       [&action_builder](const YAML::Node &action) {
+                         return action_builder(action);
+                       });
+        return std::make_unique<ActionSequence>(node["name"].as<std::string>(),
+                                                std::move(actions));
+      });
+  builder_functions_.emplace(
+      "parallel_actions",
+      [](const YAML::Node &node, const ActionBuilder &action_builder) {
+        std::vector<ActionObject> actions;
+        std::transform(node["actions"].begin(), node["actions"].end(),
+                       std::back_inserter(actions),
+                       [&action_builder](const YAML::Node &action) {
+                         return action_builder(action);
+                       });
+        return std::make_unique<ParallelActions>(node["name"].as<std::string>(),
+                                                 std::move(actions));
+      });
+}
 
 ActionObject ActionBuilder::operator()(const YAML::Node &node) const {
   auto action = node["action"];
