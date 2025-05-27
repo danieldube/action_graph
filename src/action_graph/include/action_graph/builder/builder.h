@@ -1,12 +1,12 @@
 #ifndef ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_H_
 #define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_H_
 
-#include <action_graph/action.h>
+#include "action_graph/action.h"
+#include "yaml-cpp/yaml.h"
 #include <chrono>
 #include <functional>
 #include <map>
 #include <memory>
-#include <yaml-cpp/yaml.h>
 
 namespace action_graph {
 namespace builder {
@@ -44,8 +44,6 @@ BuildActionGraph(const std::string &yaml_string,
 
 ActionObject BuildTrigger(const YAML::Node &yaml_node,
                           const BuilderFunctions &action_builders);
-
-std::chrono::duration<double> ParseDuration(const std::string &duration_str);
 } // namespace builder
 } // namespace action_graph
 

@@ -1,9 +1,9 @@
-#include <action_graph/action.h>
-#include <action_graph/action_sequence.h>
-#include <action_graph/builder.h>
+#include "action_graph/action.h"
+#include "action_graph/action_sequence.h"
+#include "action_graph/builder/builder.h"
+#include "yaml-cpp/yaml.h"
 #include <gtest/gtest.h>
 #include <string>
-#include <yaml-cpp/yaml.h>
 
 const std::string kSimpleGraphYml = R"(
 - trigger:
@@ -90,26 +90,6 @@ TEST(ActionBuilder, simple_graph) {
   EXPECT_EQ(message, "one second executed");
   action.back()->Execute();
   EXPECT_EQ(message, "two seconds executed");
-}
-
-TEST(ParseDuration, seconds) {
-  EXPECT_EQ(action_graph::builder::ParseDuration("10 seconds"),
-            std::chrono::seconds(10));
-}
-
-TEST(ParseDuration, milliseconds) {
-  EXPECT_EQ(action_graph::builder::ParseDuration("10 milliseconds"),
-            std::chrono::milliseconds(10));
-}
-
-TEST(ParseDuration, microseconds) {
-  EXPECT_EQ(action_graph::builder::ParseDuration("10 microseconds"),
-            std::chrono::microseconds(10));
-}
-
-TEST(ParseDuration, nanoseconds) {
-  EXPECT_EQ(action_graph::builder::ParseDuration("10 nanoseconds"),
-            std::chrono::nanoseconds(10));
 }
 
 const std::string kSequentialActions = R"(

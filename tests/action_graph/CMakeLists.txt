@@ -3,12 +3,13 @@ target_sources(
   action_graph_test
   PRIVATE action_test.cpp
           action_sequence_test.cpp
-          builder_test.cpp
+          builder/builder_test.cpp
           parallel_actions_test.cpp
           single_action_test.cpp
           global_timer_test.cpp
           action_sequence_performance_test.cpp
-          parallel_actions_performance_test.cpp)
+          parallel_actions_performance_test.cpp
+          builder/parse_duration_test.cpp)
 
 target_link_libraries(action_graph_test PRIVATE GTest::gtest_main
                                                 action_graph::action_graph)
