@@ -15,9 +15,6 @@ const std::string kCallbackAction = R"(
 
 TEST(ActionBuilder, simple_action) {
   using action_graph::builder::ActionBuilder;
-  using action_graph::builder::ActionObject;
-  using action_graph::builder::BuildActionGraph;
-  using action_graph::builder::BuilderFunctions;
   using action_graph::builder::GenericActionBuilder;
 
   std::string message;
@@ -53,9 +50,7 @@ const std::string kSimpleGraphYml = R"(
 
 TEST(ActionBuilder, simple_graph) {
   using action_graph::builder::ActionBuilder;
-  using action_graph::builder::ActionObject;
   using action_graph::builder::BuildActionGraph;
-  using action_graph::builder::BuilderFunctions;
   using action_graph::builder::GenericActionBuilder;
 
   std::string message;

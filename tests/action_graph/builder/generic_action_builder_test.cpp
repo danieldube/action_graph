@@ -22,14 +22,9 @@ const std::string kSequentialActions = R"(
 
 TEST(ActionBuilder, sequential_actions) {
   using action_graph::builder::ActionBuilder;
-  using action_graph::builder::ActionObject;
-  using action_graph::builder::BuildActionGraph;
-  using action_graph::builder::BuilderFunctions;
   using action_graph::builder::CreateGenericActionBuilderWithDefaultActions;
-  using action_graph::builder::GenericActionBuilder;
 
   std::vector<std::string> messages;
-  BuilderFunctions actions{{}};
   auto action_builder = CreateGenericActionBuilderWithDefaultActions();
   action_builder.AddBuilderFunction(
       "callback_action",
@@ -63,11 +58,7 @@ const std::string kParallelActions = R"(
 
 TEST(ActionBuilder, parallel_actions) {
   using action_graph::builder::ActionBuilder;
-  using action_graph::builder::ActionObject;
-  using action_graph::builder::BuildActionGraph;
-  using action_graph::builder::BuilderFunctions;
   using action_graph::builder::CreateGenericActionBuilderWithDefaultActions;
-  using action_graph::builder::GenericActionBuilder;
 
   std::mutex messages_mutex;
   std::vector<std::string> messages;
