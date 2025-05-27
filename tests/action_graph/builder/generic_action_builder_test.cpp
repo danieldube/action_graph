@@ -1,6 +1,5 @@
-#include "action_graph/action_sequence.h"
-#include "action_graph/builder/generic_action_builder.h"
 #include "yaml-cpp/yaml.h"
+#include <action_graph/builder/generic_action_builder.h>
 #include <gtest/gtest.h>
 #include <string>
 

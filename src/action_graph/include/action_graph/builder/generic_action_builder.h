@@ -15,6 +15,9 @@ private:
   BuilderFunctions builder_functions_;
 };
 
+std::vector<ActionObject> BuildActions(const YAML::Node &node,
+                                       const ActionBuilder &action_builder);
+
 GenericActionBuilder CreateGenericActionBuilderWithDefaultActions();
 } // namespace builder
 } // namespace action_graph

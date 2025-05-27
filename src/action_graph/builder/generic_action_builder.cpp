@@ -12,6 +12,21 @@ using BuilderFunction =
     std::function<ActionObject(const YAML::Node &, const ActionBuilder &)>;
 using BuilderFunctions = std::map<std::string, BuilderFunction>;
 
+std::vector<ActionObject> BuildActions(const YAML::Node &node,
+                                       const ActionBuilder &action_builder) {
+  std::vector<ActionObject> actions;
+  const auto &actions_node = node["actions"];
+  if (!actions_node) {
+    throw YamlParsingError("Actions are not defined.", node);
+  }
+  std::transform(actions_node.begin(), actions_node.end(),
+                 std::back_inserter(actions),
+                 [&action_builder](const YAML::Node &action) {
+                   return action_builder(action);
+                 });
+  return actions;
+}
+
 ActionObject GenericActionBuilder::operator()(const YAML::Node &node) const {
   auto action = node["action"];
   if (!action) {

@@ -20,21 +20,6 @@ ActionObject BuildTrigger(const YAML::Node &node,
   return action_builder(trigger);
 }
 
-std::vector<ActionObject> BuildActions(const YAML::Node &node,
-                                       const ActionBuilder &action_builder) {
-  std::vector<ActionObject> actions;
-  const auto &actions_node = node["actions"];
-  if (!actions_node) {
-    throw YamlParsingError("Actions are not defined.", node);
-  }
-  std::transform(actions_node.begin(), actions_node.end(),
-                 std::back_inserter(actions),
-                 [&action_builder](const YAML::Node &action) {
-                   return action_builder(action);
-                 });
-  return actions;
-}
-
 std::vector<ActionObject>
 BuildActionGraph(const std::string &yaml_string,
                  const ActionBuilder &action_builder) {
