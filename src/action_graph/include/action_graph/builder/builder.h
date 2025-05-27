@@ -19,11 +19,7 @@ using BuilderFunctions = std::map<std::string, BuilderFunction>;
 
 class ActionBuilder {
 public:
-  explicit ActionBuilder(BuilderFunctions builder_functions);
-  ActionObject operator()(const YAML::Node &node) const;
-
-private:
-  BuilderFunctions builder_functions_;
+  virtual ActionObject operator()(const YAML::Node &node) const = 0;
 };
 
 class YamlParsingError : public std::runtime_error {
@@ -38,9 +34,11 @@ public:
   using std::runtime_error::runtime_error;
 };
 
-std::vector<ActionObject>
-BuildActionGraph(const std::string &yaml_string,
-                 const BuilderFunctions &action_builders);
+std::vector<ActionObject> BuildActionGraph(const std::string &yaml_string,
+                                           const ActionBuilder &action_builder);
+
+std::vector<ActionObject> BuildActions(const YAML::Node &node,
+                                       const ActionBuilder &action_builder);
 
 ActionObject BuildTrigger(const YAML::Node &yaml_node,
                           const BuilderFunctions &action_builders);

@@ -1,4 +1,6 @@
-add_executable(action_graph_test)
+add_executable(
+  action_graph_test builder/generic_action_builder_test.cpp
+                    builder/callback_action.h builder/callback_action.cpp)
 target_sources(
   action_graph_test
   PRIVATE action_test.cpp
@@ -9,7 +11,10 @@ target_sources(
           global_timer_test.cpp
           action_sequence_performance_test.cpp
           parallel_actions_performance_test.cpp
-          builder/parse_duration_test.cpp)
+          builder/parse_duration_test.cpp
+          builder/generic_action_builder_test.cpp
+          builder/callback_action.cpp
+          builder/callback_action.h)
 
 target_link_libraries(action_graph_test PRIVATE GTest::gtest_main
                                                 action_graph::action_graph)

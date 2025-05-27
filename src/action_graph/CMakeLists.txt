@@ -1,6 +1,7 @@
 find_package(yaml-cpp REQUIRED)
 
-add_library(action_graph)
+add_library(action_graph include/action_graph/builder/generic_action_builder.h
+                         builder/generic_action_builder.cpp)
 
 target_sources(
   action_graph
@@ -13,7 +14,9 @@ target_sources(
           include/action_graph/parallel_actions.h
           include/action_graph/single_action.h
           builder/parse_duration.cpp
-          include/action_graph/builder/parse_duration.h)
+          include/action_graph/builder/parse_duration.h
+          include/action_graph/builder/generic_action_builder.h
+          builder/generic_action_builder.cpp)
 
 target_include_directories(action_graph PUBLIC include)
 
