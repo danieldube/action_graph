@@ -6,54 +6,10 @@ using action_graph::GlobalTimer;
 #include <atomic>
 #include <chrono>
 
-// NOLINTBEGIN(*identifier-naming)
-class TestClock {
-public:
-  using rep = int64_t;
-  using period = std::milli;
-  using duration = std::chrono::duration<rep, period>;
-  using time_point = std::chrono::time_point<TestClock, duration>;
-
-  static constexpr bool is_steady = true;
-
-  static time_point now() noexcept { return time_point(current_time_.load()); }
-
-  static void advance_time(const duration &delta) noexcept {
-    current_time_ = current_time_.load() + delta;
-  }
-
-  static void reset() noexcept { current_time_ = duration{0}; }
-
-private:
-  static std::atomic<duration> current_time_;
-};
-// NOLINTEND(*identifier-naming)
-
-std::atomic<TestClock::duration> TestClock::current_time_ =
-    TestClock::duration{0};
+#include <test_clock.h>
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
-
-TEST(TestClock, init) {
-  TestClock::reset();
-  EXPECT_EQ(TestClock::now().time_since_epoch(), std::chrono::seconds{0});
-}
-
-TEST(TestClock, advance) {
-  TestClock::reset();
-  TestClock::advance_time(seconds{5});
-  EXPECT_EQ(TestClock::now().time_since_epoch(), seconds{5});
-  TestClock::advance_time(milliseconds{1});
-  EXPECT_EQ(TestClock::now().time_since_epoch(), milliseconds{5001});
-}
-
-TEST(TestClock, reset) {
-  TestClock::reset();
-  TestClock::advance_time(seconds{5});
-  TestClock::reset();
-  EXPECT_EQ(TestClock::now().time_since_epoch(), seconds{0});
-}
 
 class GlobalTimerTest : public ::testing::Test {
 protected:

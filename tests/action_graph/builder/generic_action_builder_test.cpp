@@ -5,6 +5,31 @@
 
 #include "callback_action.h"
 
+const std::string kCallbackAction = R"(
+  action:
+    name: action
+    type: callback_action
+    message: "one second executed"
+)";
+
+TEST(GenericActionBuilder, simple_action) {
+  using action_graph::builder::ActionBuilder;
+  using action_graph::builder::GenericActionBuilder;
+
+  std::string message;
+  GenericActionBuilder action_builder{};
+  action_builder.AddBuilderFunction(
+      "callback_action",
+      [&message](const YAML::Node &node, const ActionBuilder &) {
+        return CreateCallbackActionFromYaml(
+            node, [&message](const std::string &msg) { message = msg; });
+      });
+  YAML::Node action_yml = YAML::Load(kCallbackAction);
+  auto action = action_builder(action_yml);
+  action->Execute();
+  EXPECT_EQ(message, "one second executed");
+}
+
 const std::string kSequentialActions = R"(
   action:
     name: action

@@ -1,6 +1,4 @@
-add_executable(
-  action_graph_test builder/generic_action_builder_test.cpp
-                    builder/callback_action.h builder/callback_action.cpp)
+add_executable(action_graph_test)
 target_sources(
   action_graph_test
   PRIVATE action_test.cpp
@@ -8,16 +6,23 @@ target_sources(
           builder/builder_test.cpp
           parallel_actions_test.cpp
           single_action_test.cpp
+          test_clock.h
+          test_clock.cpp
           global_timer_test.cpp
           action_sequence_performance_test.cpp
           parallel_actions_performance_test.cpp
           builder/parse_duration_test.cpp
           builder/generic_action_builder_test.cpp
           builder/callback_action.cpp
-          builder/callback_action.h)
+          builder/callback_action.h
+          builder/generic_action_builder_test.cpp
+          builder/callback_action.h
+          builder/callback_action.cpp)
 
 target_link_libraries(action_graph_test PRIVATE GTest::gtest_main
                                                 action_graph::action_graph)
+
+target_include_directories(action_graph_test PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 include(CTest)
 include(GoogleTest)
