@@ -10,6 +10,27 @@
 #include <thread>
 
 namespace action_graph {
+
+template <typename Clock> class JumpToPastDetector {
+public:
+  using TimePoint = typename Clock::time_point;
+  explicit JumpToPastDetector(TimePoint now,
+                              std::function<void(TimePoint)> on_jump_callback)
+      : on_jump_callback_(std::move(on_jump_callback)),
+        recent_time_point_(now) {}
+
+  void CallbackIfRequired(TimePoint now) {
+    if (now < recent_time_point_) {
+      on_jump_callback_(now);
+    }
+    recent_time_point_ = now;
+  }
+
+private:
+  TimePoint recent_time_point_;
+  std::function<void(TimePoint)> on_jump_callback_;
+};
+
 template <typename Clock> class GlobalTimer {
 public:
   using Duration = typename Clock::duration;
@@ -54,8 +75,13 @@ private:
   };
 
   void TriggerLoop() {
+    JumpToPastDetector<typename Clock::time_point> jump_detector(
+        Clock::now(),
+        [this](const TimePoint &now) { HandleClockJumpBackwards(now); });
+
     while (is_timer_thread_running_) {
       const auto now = Clock::now();
+      jump_detector.CallbackIfRequired(now);
       TriggerIfReached(now);
       loop_conditional_variable_.notify_all();
     }
@@ -68,6 +94,13 @@ private:
         trigger.callback();
         trigger.next_trigger_time_point += trigger.period;
       }
+    }
+  }
+
+  void HandleClockJumpBackwards(const TimePoint &now) {
+    std::lock_guard<std::mutex> lock(schedule_mutex_);
+    for (auto &trigger : schedule_) {
+      trigger.next_trigger_time_point = now + trigger.period;
     }
   }
 
