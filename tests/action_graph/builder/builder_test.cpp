@@ -43,9 +43,9 @@ protected:
 
   void TearDown() override { TestClock::reset(); }
 
-  static void AdvanceTime(const TestClock::duration &duration) {
+  void AdvanceTime(const TestClock::duration &duration) {
     TestClock::advance_time(duration);
-    std::this_thread::sleep_for(std::chrono::milliseconds{5});
+    timer.WaitOneCycle();
   }
 
   action_graph::GlobalTimer<TestClock> timer{};
