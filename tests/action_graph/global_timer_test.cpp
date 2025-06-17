@@ -83,7 +83,7 @@ TEST_F(GlobalTimerTest, time_jump_backwards) {
 
 class ThreadSafeLog {
 public:
-  void AddMessage(const std::string &message) {
+  void Log(const std::string &message) {
     std::lock_guard<std::mutex> lock(mutex_);
     log_.push_back(message);
   }
@@ -104,14 +104,14 @@ TEST_F(GlobalTimerTest, mix_high_frequency_with_low_frequency) {
     auto timer = GlobalTimer<TestClock>{};
 
     timer.SetTriggerTime(std::chrono::milliseconds{3}, [&log]() {
-      log.AddMessage("start 1");
+      log.Log("start 1");
       auto wait_until = TestClock::time_point(std::chrono::milliseconds{5});
       while (TestClock::now() < wait_until) {
       };
-      log.AddMessage("end 1");
+      log.Log("end 1");
     });
     timer.SetTriggerTime(std::chrono::milliseconds{1},
-                         [&log]() { log.AddMessage("execute 2"); });
+                         [&log]() { log.Log("execute 2"); });
 
     constexpr std::chrono::milliseconds kOneMillisecond{1};
     for (int loop = 1; loop < 6; ++loop) {
