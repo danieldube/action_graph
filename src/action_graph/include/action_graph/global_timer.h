@@ -8,7 +8,6 @@
 #include <mutex>
 #include <stdexcept>
 #include <thread>
-
 namespace action_graph {
 
 template <typename Clock> class JumpToPastDetector {
@@ -75,7 +74,7 @@ private:
   };
 
   void TriggerLoop() {
-    JumpToPastDetector<typename Clock::time_point> jump_detector(
+    JumpToPastDetector<Clock> jump_detector(
         Clock::now(),
         [this](const TimePoint &now) { HandleClockJumpBackwards(now); });
 
@@ -83,6 +82,8 @@ private:
       const auto now = Clock::now();
       jump_detector.CallbackIfRequired(now);
       TriggerIfReached(now);
+      // Looks like the schedule_mutex is locked by WaitOneCycle, first and
+      // therefore we miss some cycles.
       loop_conditional_variable_.notify_all();
     }
   }
