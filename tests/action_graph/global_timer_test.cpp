@@ -80,3 +80,49 @@ TEST_F(GlobalTimerTest, time_jump_backwards) {
   timer.WaitOneCycle();
   EXPECT_EQ(trigger_counter_one, 2);
 }
+
+class ThreadSafeLog {
+public:
+  void AddMessage(const std::string &message) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    log_.push_back(message);
+  }
+
+  std::vector<std::string> GetLog() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return log_;
+  }
+
+private:
+  std::vector<std::string> log_;
+  std::mutex mutex_;
+};
+
+TEST_F(GlobalTimerTest, mix_high_frequency_with_low_frequency) {
+  ThreadSafeLog log;
+  {
+    auto timer = GlobalTimer<TestClock>{};
+
+    timer.SetTriggerTime(std::chrono::milliseconds{3}, [&log]() {
+      log.AddMessage("start 1");
+      auto wait_until = TestClock::time_point(std::chrono::milliseconds{5});
+      while (TestClock::now() < wait_until) {
+      };
+      log.AddMessage("end 1");
+    });
+    timer.SetTriggerTime(std::chrono::milliseconds{1},
+                         [&log]() { log.AddMessage("execute 2"); });
+
+    constexpr std::chrono::milliseconds kOneMillisecond{1};
+    for (int loop = 1; loop < 6; ++loop) {
+      TestClock::advance_time(kOneMillisecond);
+      std::this_thread::sleep_for(std::chrono::milliseconds{1});
+    }
+  }
+
+  std::vector<std::string> expected_log = {"execute 2", "execute 2", "start 1",
+                                           "execute 2", "execute 2", "end 1",
+                                           "execute 2"};
+
+  EXPECT_EQ(expected_log, log.GetLog());
+}
