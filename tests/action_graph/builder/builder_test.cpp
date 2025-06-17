@@ -41,11 +41,11 @@ protected:
         });
   }
 
-  void TearDown() override { TestClock::reset(); }
-
   void AdvanceTime(const TestClock::duration &duration) {
     TestClock::advance_time(duration);
     timer.WaitOneCycle();
+    // This is a hack to workaround wrong signalling
+    std::this_thread::sleep_for(std::chrono::milliseconds{10});
   }
 
   action_graph::GlobalTimer<TestClock> timer{};
