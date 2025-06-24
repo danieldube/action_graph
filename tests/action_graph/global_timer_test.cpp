@@ -129,7 +129,7 @@ TEST_F(GlobalTimerTest, mix_high_frequency_with_low_frequency) {
       "execute Bob at 3", "execute Bob at 4", "execute Bob at 5"};
 
   const auto log_messages = log.GetLog();
-  for (const auto &expected_log_entry : expected_log) {
+  for (const auto expected_log_entry : expected_log) {
     auto log_entry =
         std::find(log_messages.begin(), log_messages.end(), expected_log_entry);
     EXPECT_NE(log_entry, log_messages.end())
