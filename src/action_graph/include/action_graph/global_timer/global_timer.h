@@ -8,6 +8,9 @@
 #include <mutex>
 #include <stdexcept>
 #include <thread>
+
+#include <action_graph/global_timer/trigger.h>
+
 namespace action_graph {
 
 template <typename Clock> class JumpToPastDetector {
@@ -28,44 +31,6 @@ public:
 private:
   TimePoint recent_time_point_;
   std::function<void(TimePoint)> on_jump_callback_;
-};
-
-class Trigger {
-public:
-  explicit Trigger(std::function<void()> callback)
-      : callback_(std::move(callback)) {}
-
-  Trigger(const Trigger &) = delete;
-  Trigger(Trigger &&other) noexcept
-      : callback_(std::move(other.callback_)),
-        is_running_(other.is_running_.load()) {};
-  Trigger &operator=(const Trigger &) = delete;
-  Trigger &operator=(Trigger &&) = delete;
-
-  ~Trigger() { WaitUntilTriggerIsFinished(); }
-
-  void TriggerAsynchronously() {
-    // We can not just if(is_running_), since then we have a gap until the
-    // variable is set to true. During the gap, the trigger could be
-    // executed a second time.
-    if (is_running_.exchange(true)) {
-      return;
-    }
-    std::thread([this]() {
-      callback_();
-      is_running_ = false;
-    }).detach();
-  }
-
-  void WaitUntilTriggerIsFinished() const {
-    while (is_running_) {
-      std::this_thread::yield();
-    }
-  }
-
-private:
-  std::function<void()> callback_;
-  std::atomic<bool> is_running_{false};
 };
 
 template <typename Clock> class GlobalTimer {

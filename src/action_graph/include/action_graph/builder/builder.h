@@ -3,7 +3,7 @@
 
 #include <action_graph/action.h>
 #include <action_graph/builder/parse_duration.h>
-#include <action_graph/global_timer.h>
+#include <action_graph/global_timer/global_timer.h>
 
 #include <chrono>
 #include <functional>

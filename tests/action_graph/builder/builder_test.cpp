@@ -4,7 +4,7 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 
-#include <action_graph/global_timer.h>
+#include "action_graph/global_timer/global_timer.h"
 #include <builder/callback_action.h>
 #include <test_clock.h>
 
