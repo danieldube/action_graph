@@ -8,6 +8,7 @@ target_sources(
           single_action_test.cpp
           test_clock.h
           test_clock.cpp
+          test_clock_test.cpp
           global_timer/global_timer_test.cpp
           global_timer/trigger_test.cpp
           action_sequence_performance_test.cpp
