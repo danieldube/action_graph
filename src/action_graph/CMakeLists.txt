@@ -16,7 +16,10 @@ target_sources(
           builder/parse_duration.cpp
           include/action_graph/builder/parse_duration.h
           include/action_graph/builder/generic_action_builder.h
-          builder/generic_action_builder.cpp)
+          builder/generic_action_builder.cpp
+          include/action_graph/global_timer/global_timer.h
+          include/action_graph/global_timer/trigger.h
+          global_timer/trigger.cpp)
 
 target_include_directories(action_graph PUBLIC include)
 

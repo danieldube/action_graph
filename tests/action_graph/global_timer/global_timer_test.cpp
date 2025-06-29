@@ -1,4 +1,4 @@
-#include <action_graph/global_timer.h>
+#include "action_graph/global_timer/global_timer.h"
 #include <gtest/gtest.h>
 
 using action_graph::GlobalTimer;
@@ -7,7 +7,7 @@ using action_graph::GlobalTimer;
 #include <atomic>
 #include <chrono>
 
-#include <test_clock.h>
+#include "test_clock.h"
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
@@ -136,76 +136,4 @@ TEST_F(GlobalTimerTest, mix_high_frequency_with_low_frequency) {
     EXPECT_NE(log_entry, log_messages.end())
         << "Expected log entry not found: " << expected_log_entry;
   }
-}
-
-class TriggerTest : public ::testing::Test {
-protected:
-  using Trigger = action_graph::Trigger;
-
-  TriggerTest() : trigger([this]() { TriggerFunction(); }) {}
-
-  void TriggerFunction() {
-    log.Log("running");
-    should_finish = false;
-    while (!should_finish.load()) {
-      std::this_thread::yield();
-    }
-    log.Log("finished");
-  }
-
-  static void GiveTriggerThreadTimeToProcess() {
-    constexpr std::chrono::milliseconds kOneMillisecond{1};
-    std::this_thread::sleep_for(kOneMillisecond);
-  }
-
-  ThreadSafeLog log;
-  std::atomic<bool> should_finish{false};
-
-  Trigger trigger;
-};
-
-TEST_F(TriggerTest, trigger_once) {
-  std::vector<std::string> expected_log{};
-  EXPECT_EQ(log.GetLog(), expected_log);
-
-  trigger.TriggerAsynchronously();
-  GiveTriggerThreadTimeToProcess();
-  should_finish = true;
-  trigger.WaitUntilTriggerIsFinished();
-  expected_log = {"running", "finished"};
-  EXPECT_EQ(log.GetLog(), expected_log);
-}
-
-TEST_F(TriggerTest, trigger_a_second_time_while_running) {
-  std::vector<std::string> expected_log{};
-
-  trigger.TriggerAsynchronously();
-  trigger.TriggerAsynchronously();
-  GiveTriggerThreadTimeToProcess();
-
-  expected_log = {"running"};
-  EXPECT_EQ(log.GetLog(), std::vector<std::string>{"running"});
-
-  should_finish = true;
-  trigger.WaitUntilTriggerIsFinished();
-
-  expected_log = {"running", "finished"};
-  EXPECT_EQ(log.GetLog(), expected_log);
-}
-
-TEST_F(TriggerTest, trigger_twice) {
-  std::vector<std::string> expected_log{};
-
-  trigger.TriggerAsynchronously();
-  GiveTriggerThreadTimeToProcess();
-  should_finish = true;
-  trigger.WaitUntilTriggerIsFinished();
-
-  trigger.TriggerAsynchronously();
-  GiveTriggerThreadTimeToProcess();
-  should_finish = true;
-  trigger.WaitUntilTriggerIsFinished();
-
-  expected_log = {"running", "finished", "running", "finished"};
-  EXPECT_EQ(log.GetLog(), expected_log);
 }

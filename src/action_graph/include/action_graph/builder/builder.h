@@ -1,9 +1,9 @@
 #ifndef ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_BUILDER_H_
 #define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_BUILDER_H_
 
+#include "action_graph/global_timer/global_timer.h"
 #include <action_graph/action.h>
 #include <action_graph/builder/parse_duration.h>
-#include <action_graph/global_timer.h>
 
 #include <chrono>
 #include <functional>
