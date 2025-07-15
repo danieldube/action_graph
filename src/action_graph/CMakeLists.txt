@@ -1,7 +1,6 @@
 find_package(yaml-cpp REQUIRED)
 
-add_library(action_graph builder/generic_action_builder.cpp
-                         include/action_graph/builder/generic_action_builder.h)
+add_library(action_graph)
 
 target_sources(
   action_graph

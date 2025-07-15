@@ -1,29 +1,42 @@
 #include <action_graph/builder/builder.h>
 #include <action_graph/builder/generic_action_builder.h>
 #include <gtest/gtest.h>
+#include <native_configuration/map_node.h>
+#include <native_configuration/scalar_node.h>
+#include <native_configuration/sequence_node.h>
 #include <string>
-#include <yaml-cpp/yaml.h>
 
-#include "action_graph/global_timer/global_timer.h"
+#include <action_graph/global_timer/global_timer.h>
 #include <builder/callback_action.h>
 #include <test_clock.h>
 
-const std::string kSimpleGraphYml = R"(
-- trigger:
-    name: two_seconds
-    period: 2 seconds
-    action:
-      name: action
-      type: callback_action
-      message: "two seconds executed"
-- trigger:
-    name: three_seconds
-    period: 3 seconds
-    action:
-      name: action
-      type: callback_action
-      message: "three seconds executed"
-)";
+using namespace action_graph::native_configuration;
+using action_graph::builder::ConfigurationNode;
+
+const SequenceNode kSimpleGraph{
+    MapNode{std::make_pair(
+        "trigger",
+        MapNode{
+            std::make_pair("name", ScalarNode{"two_seconds"}),
+            std::make_pair("period", ScalarNode{"2 seconds"}),
+            std::make_pair(
+                "action",
+                MapNode{std::make_pair("name", ScalarNode{"action"}),
+                        std::make_pair("type", ScalarNode{"callback_action"}),
+                        std::make_pair("message",
+                                       ScalarNode{"two seconds executed"})})})},
+    MapNode{std::make_pair(
+        "trigger",
+        MapNode{
+            std::make_pair("name", ScalarNode{"three_seconds"}),
+            std::make_pair("period", ScalarNode{"3 seconds"}),
+            std::make_pair(
+                "action",
+                MapNode{
+                    std::make_pair("name", ScalarNode{"action"}),
+                    std::make_pair("type", ScalarNode{"callback_action"}),
+                    std::make_pair("message",
+                                   ScalarNode{"three seconds executed"})})})}};
 
 class BuildTriggerTest : public ::testing::Test {
 protected:
@@ -32,8 +45,8 @@ protected:
     using action_graph::builder::ActionBuilder;
     auto &message_reference = this->message;
     action_builder.AddBuilderFunction(
-        "callback_action",
-        [&message_reference](const YAML::Node &node, const ActionBuilder &) {
+        "callback_action", [&message_reference](const ConfigurationNode &node,
+                                                const ActionBuilder &) {
           return CreateCallbackActionFromYaml(
               node, [&message_reference](const std::string &msg) {
                 message_reference = msg;
@@ -56,7 +69,7 @@ protected:
 TEST_F(BuildTriggerTest, BuildActionGraph_simple_graph) {
   using action_graph::builder::BuildActionGraph;
 
-  auto action = BuildActionGraph(kSimpleGraphYml, action_builder, timer);
+  auto action = BuildActionGraph(kSimpleGraph, action_builder, timer);
 
   EXPECT_EQ(message, "");
 
@@ -70,23 +83,23 @@ TEST_F(BuildTriggerTest, BuildActionGraph_simple_graph) {
   EXPECT_EQ(message, "three seconds executed");
 }
 
-const std::string kTriggerYaml = R"(
-- trigger:
-    name: one_second
-    period: 1 seconds
-    action:
-      name: action
-      type: callback_action
-      message: "one second executed"
-)";
+const MapNode kTriggerGraph{std::make_pair(
+    "trigger",
+    MapNode{std::make_pair("name", ScalarNode{"one_second"}),
+            std::make_pair("period", ScalarNode{"1 seconds"}),
+            std::make_pair(
+                "action",
+                MapNode{std::make_pair("name", ScalarNode{"action"}),
+                        std::make_pair("type", ScalarNode{"callback_action"}),
+                        std::make_pair("message",
+                                       ScalarNode{"one second executed"})})})};
 
 TEST_F(BuildTriggerTest, BuildTrigger_single_trigger) {
   using action_graph::builder::ActionBuilder;
   using action_graph::builder::BuildTrigger;
   using action_graph::builder::GenericActionBuilder;
 
-  YAML::Node node = YAML::Load(kTriggerYaml);
-  auto trigger = BuildTrigger(node[0], action_builder, timer);
+  auto trigger = BuildTrigger(kTriggerGraph, action_builder, timer);
 
   EXPECT_EQ(message, "");
 
