@@ -57,7 +57,7 @@ const MapNode kSequentialActions{std::make_pair(
                         std::make_pair("message",
                                        ScalarNode{"action2 executed"})})}})})};
 
-TEST(ActionBuilder, sequential_actions) {
+TEST(GenericActionBuilder, sequential_actions) {
   using action_graph::builder::ActionBuilder;
   using action_graph::builder::CreateGenericActionBuilderWithDefaultActions;
 
@@ -100,7 +100,7 @@ const MapNode kParallelActions{std::make_pair(
                         std::make_pair("message",
                                        ScalarNode{"action2 executed"})})}})})};
 
-TEST(ActionBuilder, parallel_actions) {
+TEST(GenericActionBuilder, parallel_actions) {
   using action_graph::builder::ActionBuilder;
   using action_graph::builder::CreateGenericActionBuilderWithDefaultActions;
 

@@ -1,5 +1,3 @@
-find_package(yaml-cpp REQUIRED)
-
 add_library(action_graph)
 
 target_sources(
@@ -24,5 +22,3 @@ target_sources(
 target_include_directories(action_graph PUBLIC include)
 
 add_library(action_graph::action_graph ALIAS action_graph)
-
-target_link_libraries(action_graph PUBLIC yaml-cpp::yaml-cpp)
