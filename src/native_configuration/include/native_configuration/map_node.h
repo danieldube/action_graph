@@ -11,10 +11,10 @@ class MapNode : public builder::ConfigurationNode {
 public:
   using Entry = std::pair<std::string, ConfigurationNode::Pointer>;
 
-  MapNode(std::map<std::string, ConfigurationNode::Pointer> entries)
+  explicit MapNode(std::map<std::string, ConfigurationNode::Pointer> entries)
       : entries_(std::move(entries)) {}
 
-  template <typename... Pairs> MapNode(Pairs &&...pairs) {
+  template <typename... Pairs> explicit MapNode(Pairs &&...pairs) {
     (entries_.emplace(
          std::forward<Pairs>(pairs).first,
          std::make_unique<
