@@ -1,4 +1,5 @@
 #include <action_graph/builder/generic_action_builder.h>
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <native_configuration/map_node.h>
 #include <native_configuration/scalar_node.h>
