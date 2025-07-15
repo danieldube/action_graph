@@ -21,21 +21,21 @@ public:
     ConfigurationNodeNotFound(const std::string &message,
                               const ConfigurationNode &node)
         : std::runtime_error("Configuration node not found: " + message +
-                             "\nNode:" + node.asString()) {}
+                             "\nNode:" + node.AsString()) {}
     explicit ConfigurationNodeNotFound(const std::string &message)
         : std::runtime_error("Configuration node not found: " + message) {}
   };
 
-  virtual bool isScalar() const noexcept = 0;
-  virtual bool isMap() const noexcept = 0;
-  virtual bool isSequence() const noexcept = 0;
+  virtual bool IsScalar() const noexcept = 0;
+  virtual bool IsMap() const noexcept = 0;
+  virtual bool IsSequence() const noexcept = 0;
 
-  virtual bool hasKey(const std::string &key) const noexcept = 0;
-  virtual Reference get(const std::string &key) const = 0;
-  virtual Reference get(std::size_t index) const = 0;
-  virtual std::size_t size() const noexcept = 0;
+  virtual bool HasKey(const std::string &key) const noexcept = 0;
+  virtual Reference Get(const std::string &key) const = 0;
+  virtual Reference Get(std::size_t index) const = 0;
+  virtual std::size_t Size() const noexcept = 0;
 
-  virtual std::string asString() const noexcept = 0;
+  virtual std::string AsString() const noexcept = 0;
 };
 } // namespace builder
 } // namespace action_graph

@@ -1,1 +1,2 @@
 add_subdirectory(action_graph)
+add_subdirectory(native_configuration)
