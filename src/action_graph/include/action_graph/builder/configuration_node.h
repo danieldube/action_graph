@@ -14,7 +14,7 @@ public:
   virtual ~ConfigurationNode() = default;
 
   using Pointer = std::unique_ptr<ConfigurationNode>;
-  using Reference = ConfigurationNode &;
+  using Reference = const ConfigurationNode &;
 
   class ConfigurationNodeNotFound : public std::runtime_error {
   public:
