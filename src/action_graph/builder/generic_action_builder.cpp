@@ -1,4 +1,5 @@
 #include <action_graph/action_sequence.h>
+#include <action_graph/builder/configuration_node.h>
 #include <action_graph/builder/generic_action_builder.h>
 #include <action_graph/parallel_actions.h>
 
@@ -8,35 +9,37 @@ namespace builder {
 using ::action_graph::Action;
 using ActionObject = std::unique_ptr<Action>;
 class ActionBuilder;
-using BuilderFunction =
-    std::function<ActionObject(const YAML::Node &, const ActionBuilder &)>;
+using BuilderFunction = std::function<ActionObject(const ConfigurationNode &,
+                                                   const ActionBuilder &)>;
 using BuilderFunctions = std::map<std::string, BuilderFunction>;
 
-std::vector<ActionObject> BuildActions(const YAML::Node &node,
+std::vector<ActionObject> BuildActions(const ConfigurationNode &node,
                                        const ActionBuilder &action_builder) {
   std::vector<ActionObject> actions;
-  const auto &actions_node = node["actions"];
-  if (!actions_node) {
-    throw YamlParsingError("Actions are not defined.", node);
+  if (!node.HasKey("actions")) {
+    throw ConfigurationError("Actions are not defined.", node);
   }
-  std::transform(actions_node.begin(), actions_node.end(),
-                 std::back_inserter(actions),
-                 [&action_builder](const YAML::Node &action) {
-                   return action_builder(action);
-                 });
+  const auto &actions_node = node.Get("actions");
+  for (size_t entry_index = 0; entry_index < actions_node.Size();
+       ++entry_index) {
+    const auto &action = actions_node.Get(entry_index);
+    actions.push_back(action_builder(action));
+  }
   return actions;
 }
 
-ActionObject GenericActionBuilder::operator()(const YAML::Node &node) const {
-  auto action = node["action"];
-  if (!action) {
-    throw YamlParsingError(
+ActionObject
+GenericActionBuilder::operator()(const ConfigurationNode &node) const {
+  if (!node.HasKey("action")) {
+    throw ConfigurationError(
         "The ActionBuilder can just be called on action nodes.", node);
   }
-  auto action_type = action["type"].as<std::string>();
-  if (action_type.empty()) {
-    throw YamlParsingError("Type of the action is not defined.", action);
+  const auto &action = node.Get("action");
+  if (!action.HasKey("type")) {
+    throw ConfigurationError("Type of the action is not defined.", node);
   }
+  auto action_type = action.Get("type").AsString();
+
   auto builder = builder_functions_.find(action_type);
   if (builder == builder_functions_.end()) {
     throw BuildError("No builder defined for " + action_type + ".");
@@ -56,16 +59,16 @@ GenericActionBuilder CreateGenericActionBuilderWithDefaultActions() {
 
   builder.AddBuilderFunction(
       "sequential_actions",
-      [](const YAML::Node &node, const ActionBuilder &action_builder) {
+      [](const ConfigurationNode &node, const ActionBuilder &action_builder) {
         auto actions = BuildActions(node, action_builder);
-        return std::make_unique<ActionSequence>(node["name"].as<std::string>(),
+        return std::make_unique<ActionSequence>(node.Get("name").AsString(),
                                                 std::move(actions));
       });
   builder.AddBuilderFunction(
       "parallel_actions",
-      [](const YAML::Node &node, const ActionBuilder &action_builder) {
+      [](const ConfigurationNode &node, const ActionBuilder &action_builder) {
         auto actions = BuildActions(node, action_builder);
-        return std::make_unique<ParallelActions>(node["name"].as<std::string>(),
+        return std::make_unique<ParallelActions>(node.Get("name").AsString(),
                                                  std::move(actions));
       });
   return builder;

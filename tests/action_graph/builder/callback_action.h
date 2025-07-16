@@ -2,10 +2,10 @@
 #define ACTION_GRAPH_TESTS_ACTION_GRAPH_BUILDER_CALLBACK_ACTION_H_
 
 #include <action_graph/action.h>
+#include <action_graph/builder/configuration_node.h>
 #include <functional>
 #include <memory>
 #include <string>
-#include <yaml-cpp/yaml.h>
 
 class CallbackAction final : public action_graph::Action {
 public:
@@ -20,7 +20,7 @@ private:
 };
 
 std::unique_ptr<action_graph::Action> CreateCallbackActionFromYaml(
-    const YAML::Node &node,
+    const action_graph::builder::ConfigurationNode &node,
     std::function<void(const std::string &message)> callback);
 
 #endif // ACTION_GRAPH_TESTS_ACTION_GRAPH_BUILDER_CALLBACK_ACTION_H_

@@ -1,4 +1,5 @@
 #include <action_graph/builder/parse_duration.h>
+#include <stdexcept>
 
 namespace action_graph {
 namespace builder {

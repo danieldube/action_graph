@@ -2,7 +2,6 @@
 #define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_DURATION_PARSER_H_
 
 #include "action_graph/action.h"
-#include "yaml-cpp/yaml.h"
 #include <chrono>
 #include <functional>
 #include <map>

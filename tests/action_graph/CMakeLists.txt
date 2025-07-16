@@ -17,12 +17,11 @@ target_sources(
           builder/generic_action_builder_test.cpp
           builder/callback_action.cpp
           builder/callback_action.h
-          builder/generic_action_builder_test.cpp
-          builder/callback_action.h
-          builder/callback_action.cpp)
+          builder/configuration_node_test.cpp)
 
-target_link_libraries(action_graph_test PRIVATE GTest::gtest_main
-                                                action_graph::action_graph)
+target_link_libraries(
+  action_graph_test PRIVATE GTest::gtest_main action_graph::action_graph
+                            action_graph::native_configuration)
 
 target_include_directories(action_graph_test PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 

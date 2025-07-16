@@ -9,9 +9,9 @@ CallbackAction::CallbackAction(
 void CallbackAction::Execute() { callback_(message_); }
 
 std::unique_ptr<action_graph::Action> CreateCallbackActionFromYaml(
-    const YAML::Node &node,
+    const action_graph::builder::ConfigurationNode &node,
     std::function<void(const std::string &message)> callback) {
-  return std::make_unique<CallbackAction>(node["name"].as<std::string>(),
-                                          node["message"].as<std::string>(),
+  return std::make_unique<CallbackAction>(node.Get("name").AsString(),
+                                          node.Get("message").AsString(),
                                           std::move(callback));
 }

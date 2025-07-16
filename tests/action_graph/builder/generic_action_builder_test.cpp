@@ -1,16 +1,22 @@
-#include "yaml-cpp/yaml.h"
 #include <action_graph/builder/generic_action_builder.h>
+#include <algorithm>
 #include <gtest/gtest.h>
+#include <native_configuration/map_node.h>
+#include <native_configuration/scalar_node.h>
+#include <native_configuration/sequence_node.h>
 #include <string>
 
 #include "callback_action.h"
 
-const std::string kCallbackAction = R"(
-  action:
-    name: action
-    type: callback_action
-    message: "one second executed"
-)";
+using namespace action_graph::native_configuration;
+
+const MapNode kCallbackAction{std::make_pair(
+    "action",
+    MapNode{std::make_pair("name", ScalarNode{"action"}),
+            std::make_pair("type", ScalarNode{"callback_action"}),
+            std::make_pair("message", ScalarNode{"one second executed"})})};
+
+using action_graph::builder::ConfigurationNode;
 
 TEST(GenericActionBuilder, simple_action) {
   using action_graph::builder::ActionBuilder;
@@ -20,32 +26,39 @@ TEST(GenericActionBuilder, simple_action) {
   GenericActionBuilder action_builder{};
   action_builder.AddBuilderFunction(
       "callback_action",
-      [&message](const YAML::Node &node, const ActionBuilder &) {
+      [&message](const ConfigurationNode &node, const ActionBuilder &) {
         return CreateCallbackActionFromYaml(
             node, [&message](const std::string &msg) { message = msg; });
       });
-  YAML::Node action_yml = YAML::Load(kCallbackAction);
-  auto action = action_builder(action_yml);
+  auto action = action_builder(kCallbackAction);
   action->Execute();
   EXPECT_EQ(message, "one second executed");
 }
 
-const std::string kSequentialActions = R"(
-  action:
-    name: action
-    type: sequential_actions
-    actions:
-        - action:
-            name: action1
-            type: callback_action
-            message: "action1 executed"
-        - action:
-            name: action2
-            type: callback_action
-            message: "action2 executed"
-)";
+const MapNode kSequentialActions{std::make_pair(
+    "action",
+    MapNode{
+        std::make_pair("name", ScalarNode{"action"}),
+        std::make_pair("type", ScalarNode{"sequential_actions"}),
+        std::make_pair(
+            "actions",
+            SequenceNode{
+                MapNode{std::make_pair(
+                    "action",
+                    MapNode{
+                        std::make_pair("name", ScalarNode{"action1"}),
+                        std::make_pair("type", ScalarNode{"callback_action"}),
+                        std::make_pair("message",
+                                       ScalarNode{"action1 executed"})})},
+                MapNode{std::make_pair(
+                    "action",
+                    MapNode{
+                        std::make_pair("name", ScalarNode{"action2"}),
+                        std::make_pair("type", ScalarNode{"callback_action"}),
+                        std::make_pair("message",
+                                       ScalarNode{"action2 executed"})})}})})};
 
-TEST(ActionBuilder, sequential_actions) {
+TEST(GenericActionBuilder, sequential_actions) {
   using action_graph::builder::ActionBuilder;
   using action_graph::builder::CreateGenericActionBuilderWithDefaultActions;
 
@@ -53,35 +66,42 @@ TEST(ActionBuilder, sequential_actions) {
   auto action_builder = CreateGenericActionBuilderWithDefaultActions();
   action_builder.AddBuilderFunction(
       "callback_action",
-      [&messages](const YAML::Node &node, const ActionBuilder &) {
+      [&messages](const ConfigurationNode &node, const ActionBuilder &) {
         return CreateCallbackActionFromYaml(
             node,
             [&messages](const std::string &msg) { messages.push_back(msg); });
       });
-  YAML::Node action_yml = YAML::Load(kSequentialActions);
-  auto action = action_builder(action_yml);
+  auto action = action_builder(kSequentialActions);
   action->Execute();
   ASSERT_EQ(messages.size(), 2);
   EXPECT_EQ(messages.front(), "action1 executed");
   EXPECT_EQ(messages.back(), "action2 executed");
 }
 
-const std::string kParallelActions = R"(
-  action:
-    name: action
-    type: parallel_actions
-    actions:
-        - action:
-            name: action1
-            type: callback_action
-            message: "action1 executed"
-        - action:
-            name: action2
-            type: callback_action
-            message: "action2 executed"
-)";
+const MapNode kParallelActions{std::make_pair(
+    "action",
+    MapNode{
+        std::make_pair("name", ScalarNode{"action"}),
+        std::make_pair("type", ScalarNode{"parallel_actions"}),
+        std::make_pair(
+            "actions",
+            SequenceNode{
+                MapNode{std::make_pair(
+                    "action",
+                    MapNode{
+                        std::make_pair("name", ScalarNode{"action1"}),
+                        std::make_pair("type", ScalarNode{"callback_action"}),
+                        std::make_pair("message",
+                                       ScalarNode{"action1 executed"})})},
+                MapNode{std::make_pair(
+                    "action",
+                    MapNode{
+                        std::make_pair("name", ScalarNode{"action2"}),
+                        std::make_pair("type", ScalarNode{"callback_action"}),
+                        std::make_pair("message",
+                                       ScalarNode{"action2 executed"})})}})})};
 
-TEST(ActionBuilder, parallel_actions) {
+TEST(GenericActionBuilder, parallel_actions) {
   using action_graph::builder::ActionBuilder;
   using action_graph::builder::CreateGenericActionBuilderWithDefaultActions;
 
@@ -89,8 +109,9 @@ TEST(ActionBuilder, parallel_actions) {
   std::vector<std::string> messages;
   auto action_builder = CreateGenericActionBuilderWithDefaultActions();
   action_builder.AddBuilderFunction(
-      "callback_action", [&messages, &messages_mutex](const YAML::Node &node,
-                                                      const ActionBuilder &) {
+      "callback_action",
+      [&messages, &messages_mutex](const ConfigurationNode &node,
+                                   const ActionBuilder &) {
         return CreateCallbackActionFromYaml(
             node, [&messages, &messages_mutex](const std::string &msg) {
               std::lock_guard guard(messages_mutex);
@@ -98,8 +119,7 @@ TEST(ActionBuilder, parallel_actions) {
             });
       });
 
-  YAML::Node action_yml = YAML::Load(kParallelActions);
-  auto action = action_builder(action_yml);
+  auto action = action_builder(kParallelActions);
 
   action->Execute();
 

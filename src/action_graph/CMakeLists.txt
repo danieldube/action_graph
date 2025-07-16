@@ -1,7 +1,4 @@
-find_package(yaml-cpp REQUIRED)
-
-add_library(action_graph builder/generic_action_builder.cpp
-                         include/action_graph/builder/generic_action_builder.h)
+add_library(action_graph)
 
 target_sources(
   action_graph
@@ -16,6 +13,7 @@ target_sources(
           builder/parse_duration.cpp
           include/action_graph/builder/parse_duration.h
           include/action_graph/builder/generic_action_builder.h
+          include/action_graph/builder/configuration_node.h
           builder/generic_action_builder.cpp
           include/action_graph/global_timer/global_timer.h
           include/action_graph/global_timer/trigger.h
@@ -24,5 +22,3 @@ target_sources(
 target_include_directories(action_graph PUBLIC include)
 
 add_library(action_graph::action_graph ALIAS action_graph)
-
-target_link_libraries(action_graph PUBLIC yaml-cpp::yaml-cpp)

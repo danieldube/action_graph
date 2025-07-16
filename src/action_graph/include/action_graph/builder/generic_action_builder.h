@@ -7,7 +7,7 @@ namespace builder {
 class GenericActionBuilder final : public ActionBuilder {
 public:
   GenericActionBuilder() = default;
-  ActionObject operator()(const YAML::Node &node) const override;
+  ActionObject operator()(const ConfigurationNode &node) const override;
   void AddBuilderFunction(const std::string &action_type,
                           BuilderFunction builder_function);
 
@@ -15,7 +15,7 @@ private:
   BuilderFunctions builder_functions_;
 };
 
-std::vector<ActionObject> BuildActions(const YAML::Node &node,
+std::vector<ActionObject> BuildActions(const ConfigurationNode &node,
                                        const ActionBuilder &action_builder);
 
 GenericActionBuilder CreateGenericActionBuilderWithDefaultActions();
