@@ -17,51 +17,35 @@ public:
 private:
 };
 
-class Log {
-public:
-  void Info(const std::string &message) {
-    log_stream_ << "[INFO] " << message << std::endl;
-  }
-
-  void Error(const std::string &message) {
-    log_stream_ << "[ERROR] " << message << std::endl;
-  }
-
-  std::string GetLog() const { return log_stream_.str(); }
-
-private:
-  std::stringstream log_stream_;
-};
-
 using action_graph::ExecutionObserver;
 class TestExecutionObserver : public ExecutionObserver {
 public:
-  explicit TestExecutionObserver(Log &log) : log_(log) {}
+  explicit TestExecutionObserver(std::ostream &log) : log_(log) {}
 
-  void OnStarted() override { log_.Info("Execution started."); }
+  void OnStarted() override { log_ << "Execution started."; }
 
-  void OnFinished() override { log_.Info("Execution finished."); }
+  void OnFinished() override { log_ << "Execution finished."; }
 
   void OnFailed(const std::exception &exception) override {
     const std::string error_message =
         "Execution skipped: " + std::string(exception.what());
-    log_.Error(error_message);
+    log_ << "Execution failed: " << exception.what();
   }
 
 private:
-  Log &log_;
+  std::ostream &log_;
 };
 
 TEST(ObservableAction, execute) {
   using action_graph::ObservableAction;
-  Log log;
+  std::stringstream log;
   auto action = std::make_unique<HundredMillisecondsAction>();
   auto observer = std::make_unique<TestExecutionObserver>(log);
   ObservableAction observable_action(std::move(action), std::move(observer));
   observable_action.Execute();
 
-  EXPECT_EQ(log.GetLog(), "[INFO] Execution started.\n"
-                          "[INFO] Execution finished.\n");
+  EXPECT_EQ(log.str(), "Execution started."
+                       "Execution finished.");
 }
 
 class ThrowingAction final : public Action {
@@ -75,14 +59,13 @@ public:
 
 TEST(ObservableAction, execute_with_exception) {
   using action_graph::ObservableAction;
-  Log log;
+  std::stringstream log;
   auto action = std::make_unique<ThrowingAction>();
   auto observer = std::make_unique<TestExecutionObserver>(log);
   ObservableAction observable_action(std::move(action), std::move(observer));
 
   EXPECT_THROW(observable_action.Execute(), std::runtime_error);
 
-  EXPECT_EQ(log.GetLog(),
-            "[INFO] Execution started.\n"
-            "[ERROR] Execution skipped: This Action always throws.\n");
+  EXPECT_EQ(log.str(), "Execution started."
+                       "Execution failed: This Action always throws.");
 }
