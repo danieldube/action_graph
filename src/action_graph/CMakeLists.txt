@@ -18,7 +18,8 @@ target_sources(
           include/action_graph/global_timer/global_timer.h
           include/action_graph/global_timer/trigger.h
           global_timer/trigger.cpp
-          include/action_graph/execution_observer.h)
+          include/action_graph/execution_observer.h
+          include/action_graph/observable_action.h)
 
 target_include_directories(action_graph PUBLIC include)
 
