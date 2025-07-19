@@ -17,7 +17,8 @@ target_sources(
           builder/generic_action_builder.cpp
           include/action_graph/global_timer/global_timer.h
           include/action_graph/global_timer/trigger.h
-          global_timer/trigger.cpp)
+          global_timer/trigger.cpp
+          include/action_graph/execution_observer.h)
 
 target_include_directories(action_graph PUBLIC include)
 

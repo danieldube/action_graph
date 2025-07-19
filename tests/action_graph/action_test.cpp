@@ -1,4 +1,4 @@
-#include <action_graph/single_action.h>
+#include <action_graph/action.h>
 #include <gtest/gtest.h>
 
 using action_graph::Action;

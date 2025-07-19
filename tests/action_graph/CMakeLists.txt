@@ -13,6 +13,7 @@ target_sources(
           global_timer/trigger_test.cpp
           action_sequence_performance_test.cpp
           parallel_actions_performance_test.cpp
+          observable_action_test.cpp
           builder/parse_duration_test.cpp
           builder/generic_action_builder_test.cpp
           builder/callback_action.cpp
