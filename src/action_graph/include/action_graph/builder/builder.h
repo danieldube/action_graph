@@ -15,9 +15,7 @@ namespace action_graph {
 namespace builder {
 using ::action_graph::Action;
 using ActionObject = std::unique_ptr<Action>;
-class ActionBuilder;
-using BuilderFunction = std::function<ActionObject(const ConfigurationNode &,
-                                                   const ActionBuilder &)>;
+
 class ActionBuilder {
 public:
   virtual ActionObject operator()(const ConfigurationNode &node) const = 0;
