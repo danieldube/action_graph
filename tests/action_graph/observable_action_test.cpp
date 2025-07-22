@@ -5,16 +5,15 @@
 
 using action_graph::Action;
 
-class HundredMillisecondsAction final : public Action {
+class NoOperationAction final : public Action {
 public:
-  HundredMillisecondsAction() : Action("100ms Action") {}
+  explicit NoOperationAction(std::ostream &log)
+      : log_(log), Action("no operation") {}
 
-  void Execute() override {
-    constexpr auto hundred_milliseconds = std::chrono::milliseconds(100);
-    std::this_thread::sleep_for(hundred_milliseconds);
-  }
+  void Execute() override { log_ << "no operation executed"; }
 
 private:
+  std::ostream &log_;
 };
 
 using action_graph::ExecutionObserver;
@@ -39,12 +38,13 @@ private:
 TEST(ObservableAction, execute) {
   using action_graph::ObservableAction;
   std::stringstream log;
-  auto action = std::make_unique<HundredMillisecondsAction>();
+  auto action = std::make_unique<NoOperationAction>(log);
   auto observer = std::make_unique<TestExecutionObserver>(log);
   ObservableAction observable_action(std::move(action), std::move(observer));
   observable_action.Execute();
 
   EXPECT_EQ(log.str(), "Execution started."
+                       "no operation executed"
                        "Execution finished.");
 }
 
