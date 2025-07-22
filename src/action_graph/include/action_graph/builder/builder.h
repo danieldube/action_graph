@@ -18,8 +18,6 @@ using ActionObject = std::unique_ptr<Action>;
 class ActionBuilder;
 using BuilderFunction = std::function<ActionObject(const ConfigurationNode &,
                                                    const ActionBuilder &)>;
-using BuilderFunctions = std::map<std::string, BuilderFunction>;
-
 class ActionBuilder {
 public:
   virtual ActionObject operator()(const ConfigurationNode &node) const = 0;
