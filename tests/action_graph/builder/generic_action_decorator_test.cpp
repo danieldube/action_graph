@@ -8,21 +8,24 @@
 #include <native_configuration/sequence_node.h>
 #include <sstream>
 
-class PrintingAction : public action_graph::Action {
+using action_graph::Action;
+
+class PrintingAction : public Action {
 public:
   explicit PrintingAction(std::ostream &stream)
-      : stream_(stream), action_graph::Action("dummy") {}
+      : stream_(stream), action_graph::Action("printing action") {}
   void Execute() override { stream_ << "TestAction"; }
 
 private:
   std::ostream &stream_;
 };
 
-// Decorator: adds name before action execution
-class NameDecorator : public action_graph::DecoratedAction {
+using action_graph::DecoratedAction;
+using action_graph::builder::ActionObject;
+
+class NameDecorator : public DecoratedAction {
 public:
-  NameDecorator(std::unique_ptr<Action> action, std::string name,
-                std::ostream &stream)
+  NameDecorator(ActionObject action, std::string name, std::ostream &stream)
       : action_graph::DecoratedAction(std::move(action)),
         name_(std::move(name)), stream_(stream) {}
 
@@ -48,19 +51,21 @@ const MapNode kCallbackAction{std::make_pair(
 
 TEST(GenericActionDecoratorTest, DecorateActionWithNameDecorator) {
   std::stringstream output;
-  auto action = std::make_unique<PrintingAction>(output);
+  ActionObject action = std::make_unique<PrintingAction>(output);
 
-  action_graph::builder::GenericActionDecorator decorator_builder;
-  auto namedecorator =
-      [&output](const action_graph::builder::ConfigurationNode &node,
-                action_graph::builder::ActionObject action) {
-        auto name = node.Get("name").AsString();
-        return std::make_unique<NameDecorator>(std::move(action), name, output);
-      };
-  decorator_builder.AddDecoratorFunction("NameDecorator", namedecorator);
+  using action_graph::builder::GenericActionDecorator;
+  GenericActionDecorator decorator_builder;
 
-  auto new_action = decorator_builder(kCallbackAction, std::move(action));
-  new_action->Execute();
+  using action_graph::builder::ConfigurationNode;
+  auto name_decorator = [&output](const ConfigurationNode &node,
+                                  ActionObject action) {
+    auto name = node.Get("name").AsString();
+    return std::make_unique<NameDecorator>(std::move(action), name, output);
+  };
+  decorator_builder.AddDecoratorFunction("NameDecorator", name_decorator);
+
+  action = decorator_builder(kCallbackAction, std::move(action));
+  action->Execute();
 
   // Check output
   std::string expected = "second(first(TestAction))";
