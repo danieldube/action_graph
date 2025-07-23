@@ -16,6 +16,7 @@ target_sources(
           observable_action_test.cpp
           builder/parse_duration_test.cpp
           builder/generic_action_builder_test.cpp
+          builder/generic_action_decorator_test.cpp
           builder/callback_action.cpp
           builder/callback_action.h
           builder/configuration_node_test.cpp
