@@ -4,6 +4,11 @@
 
 namespace action_graph {
 namespace builder {
+
+using BuilderFunction = std::function<ActionObject(const ConfigurationNode &,
+                                                   const ActionBuilder &)>;
+using BuilderFunctions = std::map<std::string, BuilderFunction>;
+
 class GenericActionBuilder final : public ActionBuilder {
 public:
   GenericActionBuilder() = default;

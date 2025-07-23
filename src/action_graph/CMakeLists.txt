@@ -13,11 +13,16 @@ target_sources(
           builder/parse_duration.cpp
           include/action_graph/builder/parse_duration.h
           include/action_graph/builder/generic_action_builder.h
+          include/action_graph/builder/generic_action_decorator.h
+          builder/generic_action_decorator.cpp
           include/action_graph/builder/configuration_node.h
           builder/generic_action_builder.cpp
           include/action_graph/global_timer/global_timer.h
           include/action_graph/global_timer/trigger.h
-          global_timer/trigger.cpp)
+          global_timer/trigger.cpp
+          include/action_graph/execution_observer.h
+          include/action_graph/observable_action.h
+          include/action_graph/decorated_action.h)
 
 target_include_directories(action_graph PUBLIC include)
 
