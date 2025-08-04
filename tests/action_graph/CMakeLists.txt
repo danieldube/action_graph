@@ -4,6 +4,7 @@ target_sources(
   PRIVATE action_test.cpp
           action_sequence_test.cpp
           builder/builder_test.cpp
+          execution_observer_test.cpp
           parallel_actions_test.cpp
           single_action_test.cpp
           test_clock.h
@@ -13,11 +14,14 @@ target_sources(
           global_timer/trigger_test.cpp
           action_sequence_performance_test.cpp
           parallel_actions_performance_test.cpp
+          observable_action_test.cpp
           builder/parse_duration_test.cpp
           builder/generic_action_builder_test.cpp
+          builder/generic_action_decorator_test.cpp
           builder/callback_action.cpp
           builder/callback_action.h
-          builder/configuration_node_test.cpp)
+          builder/configuration_node_test.cpp
+          decorated_action_test.cpp)
 
 target_link_libraries(
   action_graph_test PRIVATE GTest::gtest_main action_graph::action_graph
