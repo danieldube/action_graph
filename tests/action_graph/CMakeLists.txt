@@ -4,6 +4,7 @@ target_sources(
   PRIVATE action_test.cpp
           action_sequence_test.cpp
           builder/builder_test.cpp
+          execution_observer_test.cpp
           parallel_actions_test.cpp
           single_action_test.cpp
           test_clock.h
