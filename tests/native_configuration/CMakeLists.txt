@@ -1,3 +1,8 @@
+# Copyright (c) 2025 Daniel Dube
+#
+# This file is part of the action_graph library and is licensed under the MIT
+# License. See the LICENSE file in the root directory for full license text.
+
 add_executable(native_configuration_test)
 target_sources(
   native_configuration_test PRIVATE map_node_test.cpp scalar_node_test.cpp
