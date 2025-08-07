@@ -22,8 +22,32 @@ repos:
         args: [ --style=llvm ]
   - repo: local
     hooks:
-      - id: cmake
-        name: cmake
+      - id: insert-license-cpp
+        name: insert license header (cpp)
+        entry: insert-license
+        language: system
+        types: [c++]
+        args:
+          - --license-filepath
+          - configuration/license_header.txt
+          - --dynamic-years
+          - --comment-style
+          - "//"
+      - id: insert-license-text
+        name: insert license header (text)
+        entry: insert-license
+        language: system
+        types: [cmake]
+        args:
+          - --license-filepath
+          - configuration/license_header.txt
+          - --dynamic-years
+          - --comment-style
+          - "#"
+  - repo: local
+    hooks:
+      - id: create-compile-commands
+        name: create-compile-commands
         entry: cmake
         language: system
         args: [ -Bbuild ]
