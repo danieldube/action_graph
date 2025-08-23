@@ -5,9 +5,9 @@
 
 #include <gtest/gtest.h>
 
-#include <action_graph/execution_observer.h>
+#include <action_graph/decorators/execution_observer.h>
 
-using action_graph::ExecutionObserver;
+using action_graph::decorators::ExecutionObserver;
 
 TEST(ExecutionObserver, default_implementation) {
   class TestObserver : public ExecutionObserver {

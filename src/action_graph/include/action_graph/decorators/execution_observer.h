@@ -3,12 +3,13 @@
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
 
-#ifndef ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_EXECUTION_OBSERVER_H_
-#define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_EXECUTION_OBSERVER_H_
+#ifndef ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATORS_EXECUTION_OBSERVER_H_
+#define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATORS_EXECUTION_OBSERVER_H_
 
 #include <exception>
 
 namespace action_graph {
+namespace decorators {
 class ExecutionObserver {
 public:
   virtual ~ExecutionObserver() = default;
@@ -24,6 +25,7 @@ public:
   void OnFinished() override {}
   void OnFailed(const std::exception &) override {}
 };
+} // namespace decorators
 } // namespace action_graph
 
-#endif // ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_EXECUTION_OBSERVER_H_
+#endif // ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATORS_EXECUTION_OBSERVER_H_

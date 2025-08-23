@@ -5,7 +5,7 @@
 
 #include <action_graph/builder/configuration_node.h>
 #include <action_graph/builder/generic_action_decorator.h>
-#include <action_graph/decorated_action.h>
+#include <action_graph/decorators/decorated_action.h>
 #include <gtest/gtest.h>
 #include <memory>
 #include <native_configuration/map_node.h>
@@ -25,13 +25,13 @@ private:
   std::ostream &stream_;
 };
 
-using action_graph::DecoratedAction;
 using action_graph::builder::ActionObject;
+using action_graph::decorators::DecoratedAction;
 
 class NameDecorator : public DecoratedAction {
 public:
   NameDecorator(ActionObject action, std::string name, std::ostream &stream)
-      : action_graph::DecoratedAction(std::move(action)),
+      : action_graph::decorators::DecoratedAction(std::move(action)),
         name_(std::move(name)), stream_(stream) {}
 
   void Execute() override {
