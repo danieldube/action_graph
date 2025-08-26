@@ -26,7 +26,8 @@ target_sources(
           builder/configuration_node_test.cpp
           decorators/decorated_action_test.cpp
           decorators/observable_action_test.cpp
-          decorators/execution_observer_test.cpp)
+          decorators/execution_observer_test.cpp
+          decorators/timing_action_test.cpp)
 
 target_link_libraries(
   action_graph_test PRIVATE GTest::gtest_main action_graph::action_graph
