@@ -5,10 +5,10 @@
 
 #include <gtest/gtest.h>
 
-#include <action_graph/decorated_action.h>
+#include <action_graph/decorators/decorated_action.h>
 
 using action_graph::Action;
-using action_graph::DecoratedAction;
+using action_graph::decorators::DecoratedAction;
 
 class PrintAction final : public Action {
 public:

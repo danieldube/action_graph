@@ -3,16 +3,18 @@
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
 
-#ifndef ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATED_ACTION_H_
-#define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATED_ACTION_H_
+#ifndef ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATORS_DECORATED_ACTION_H_
+#define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATORS_DECORATED_ACTION_H_
 
 #include <action_graph/action.h>
 #include <memory>
 #include <stdexcept>
 
 namespace action_graph {
-class DecoratedAction : public Action {
+namespace decorators {
+class DecoratedAction : public action_graph::Action {
 public:
+  using Action = action_graph::Action;
   explicit DecoratedAction(std::unique_ptr<Action> action)
       : Action(action->name), action_(std::move(action)) {
     if (!action_) {
@@ -27,5 +29,6 @@ protected:
 private:
   std::unique_ptr<Action> action_;
 };
+} // namespace decorators
 } // namespace action_graph
-#endif // ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATED_ACTION_H_
+#endif // ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_DECORATORS_DECORATED_ACTION_H_
