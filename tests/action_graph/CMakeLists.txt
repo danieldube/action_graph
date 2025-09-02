@@ -3,7 +3,7 @@
 # This file is part of the action_graph library and is licensed under the MIT
 # License. See the LICENSE file in the root directory for full license text.
 
-add_executable(action_graph_test)
+add_executable(action_graph_test test_log.h)
 
 target_sources(
   action_graph_test

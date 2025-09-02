@@ -1,4 +1,4 @@
-// Copyright (c) 1000 Daniel Dube
+// Copyright (c) 1000-2025 Daniel Dube
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
@@ -6,23 +6,9 @@
 #include <gtest/gtest.h>
 
 #include <action_graph/log.h>
+#include <test_log.h>
 
 using action_graph::Log;
-
-class TestLog final : public Log {
-public:
-  TestLog() : Log() {}
-
-  void LogMessage(const std::string &message) override {
-    log.push_back("Message: " + message);
-  }
-
-  void LogError(const std::string &message) override {
-    log.push_back("Error: " + message);
-  }
-
-  std::vector<std::string> log;
-};
 
 TEST(Log, log_message) {
   TestLog test_log;

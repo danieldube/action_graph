@@ -12,6 +12,8 @@
 #include <native_configuration/scalar_node.h>
 #include <native_configuration/sequence_node.h>
 #include <sstream>
+#include <test_clock.h>
+#include <test_log.h>
 
 using action_graph::Action;
 
@@ -74,6 +76,29 @@ TEST(GenericActionDecoratorTest, DecorateActionWithNameDecorator) {
   action->Execute();
 
   // Check output
-  std::string expected = "second(first(TestAction))";
+  const std::string expected = "second(first(TestAction))";
   EXPECT_EQ(output.str(), expected);
+}
+
+const MapNode kTimeMonitorDecoratorConfig{
+    std::make_pair("duration_limit", ScalarNode{"10 milliseconds"}),
+    std::make_pair("expected_period", ScalarNode{"100 milliseconds"})};
+
+using action_graph::builder::DecorateWithTimingMonitor;
+
+TEST(DecorateWithTimingMonitor, DecorateActionWithTimingMonitor) {
+  TestLog log{};
+  ActionObject action = std::make_unique<PrintingAction>(std::cout);
+  action = DecorateWithTimingMonitor<TestClock>(kTimeMonitorDecoratorConfig,
+                                                std::move(action), log);
+
+  action->Execute();
+  TestClock::advance_time(std::chrono::milliseconds(100));
+  action->Execute();
+  TestClock::advance_time(std::chrono::milliseconds(1000));
+  action->Execute();
+
+  const std::vector<std::string> expected_log{
+      "Error: The period for action printing action exceeded the limit."};
+  EXPECT_EQ(log.log, expected_log);
 }
