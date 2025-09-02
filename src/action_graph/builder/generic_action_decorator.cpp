@@ -4,6 +4,8 @@
 // License. See the LICENSE file in the root directory for full license text.
 
 #include <action_graph/builder/generic_action_decorator.h>
+#include <action_graph/decorators/timing_monitor.h>
+#include <action_graph/log.h>
 
 namespace action_graph {
 namespace builder {
@@ -40,6 +42,39 @@ ActionObject GenericActionDecorator::operator()(const ConfigurationNode &node,
 void GenericActionDecorator::AddDecoratorFunction(
     const std::string &action_type, DecorateFunction decorate_function) {
   decorate_functions_[action_type] = std::move(decorate_function);
+}
+
+std::chrono::duration<double>
+GetDurationFromConfigurationNode(const ConfigurationNode &node,
+                                 const std::string &name) {
+  if (!node.HasKey(name))
+    throw ConfigurationError("The value " + name + " is not defined.", node);
+  auto text = node.Get(name).AsString();
+  auto duration = ParseDuration(text);
+  return duration;
+}
+
+template <typename Clock>
+ActionObject DecorateWithTimingMonitor(const ConfigurationNode &node,
+                                       ActionObject action,
+                                       action_graph::Log &log) {
+  using TimingMonitor = action_graph::decorators::TimingMonitor<Clock>;
+  auto duration_limit =
+      GetDurationFromConfigurationNode(node, "duration_limit");
+  auto expected_period =
+      GetDurationFromConfigurationNode(node, "expected_period");
+  const std::string action_name = action->name;
+  return TimingMonitor(
+      action, duration_limit,
+      [&log, action_name]() {
+        log.LogError("Duration for action " + action_name +
+                     " exceeded the limit.");
+      },
+      expected_period,
+      [&log, action_name]() {
+        log.LogError("The period for action " + action_name +
+                     " exceeded the limit.");
+      });
 }
 
 } // namespace builder

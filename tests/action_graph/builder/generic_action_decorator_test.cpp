@@ -15,7 +15,7 @@
 
 using action_graph::Action;
 
-class PrintingAction : public Action {
+class PrintingAction final : public Action {
 public:
   explicit PrintingAction(std::ostream &stream)
       : stream_(stream), action_graph::Action("printing action") {}
@@ -28,7 +28,7 @@ private:
 using action_graph::builder::ActionObject;
 using action_graph::decorators::DecoratedAction;
 
-class NameDecorator : public DecoratedAction {
+class NameDecorator final : public DecoratedAction {
 public:
   NameDecorator(ActionObject action, std::string name, std::ostream &stream)
       : action_graph::decorators::DecoratedAction(std::move(action)),
@@ -63,9 +63,10 @@ TEST(GenericActionDecoratorTest, DecorateActionWithNameDecorator) {
 
   using action_graph::builder::ConfigurationNode;
   auto name_decorator = [&output](const ConfigurationNode &node,
-                                  ActionObject action) {
+                                  ActionObject action_to_decorate) {
     auto name = node.Get("name").AsString();
-    return std::make_unique<NameDecorator>(std::move(action), name, output);
+    return std::make_unique<NameDecorator>(std::move(action_to_decorate), name,
+                                           output);
   };
   decorator_builder.AddDecoratorFunction("NameDecorator", name_decorator);
 

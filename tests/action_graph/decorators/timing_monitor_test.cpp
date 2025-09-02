@@ -40,9 +40,7 @@ protected:
         [this]() { trigger_miss = true; });
   }
 
-  void SetUpTimingMonitor() {}
-
-  void ExecuteAction(const TestClock::duration &execute_duration) {
+  void ExecuteAction(const TestClock::duration &execute_duration) const {
     auto future =
         std::async(std::launch::async, [this]() { timing_action->Execute(); });
     std::this_thread::sleep_for(setup_duration);
@@ -84,7 +82,6 @@ TEST_F(TimingMonitorTest, in_trigger_period) {
 }
 
 TEST_F(TimingMonitorTest, first_in_then_exceeds_trigger_period) {
-  SetUpTimingMonitor();
   ExecuteAction(action_duration);
   TestClock::advance_time(duration_between_calls);
   ExecuteAction(action_duration);

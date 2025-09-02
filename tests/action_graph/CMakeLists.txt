@@ -4,11 +4,13 @@
 # License. See the LICENSE file in the root directory for full license text.
 
 add_executable(action_graph_test)
+
 target_sources(
   action_graph_test
   PRIVATE action_test.cpp
           action_sequence_test.cpp
           builder/builder_test.cpp
+          log_test.cpp
           parallel_actions_test.cpp
           single_action_test.cpp
           test_clock.h

@@ -14,7 +14,7 @@
 namespace action_graph {
 namespace decorators {
 
-template <typename Clock> class TimingMonitor : public DecoratedAction {
+template <typename Clock> class TimingMonitor final : public DecoratedAction {
 public:
   using Duration = typename Clock::duration;
   using TimePoint = typename Clock::time_point;
@@ -48,10 +48,10 @@ private:
   }
 
   Duration duration_limit_;
-  Duration period_{};
-  TimePoint last_execution_time_{Clock::now()};
   Callback on_duration_exceeded_;
+  Duration period_{};
   Callback on_trigger_miss_;
+  TimePoint last_execution_time_{Clock::now()};
 };
 } // namespace decorators
 } // namespace action_graph

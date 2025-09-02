@@ -14,6 +14,7 @@ target_sources(
           include/action_graph/action_sequence.h
           include/action_graph/builder/builder.h
           include/action_graph/parallel_actions.h
+          include/action_graph/log.h
           include/action_graph/single_action.h
           builder/parse_duration.cpp
           include/action_graph/builder/parse_duration.h
