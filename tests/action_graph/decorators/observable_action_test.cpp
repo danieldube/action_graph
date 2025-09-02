@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include <action_graph/observable_action.h>
+#include <action_graph/decorators/observable_action.h>
 #include <thread>
 
 using action_graph::Action;
@@ -21,7 +21,7 @@ private:
   std::ostream &log_;
 };
 
-using action_graph::ExecutionObserver;
+using action_graph::decorators::ExecutionObserver;
 class TestExecutionObserver : public ExecutionObserver {
 public:
   explicit TestExecutionObserver(std::ostream &log) : log_(log) {}
@@ -41,7 +41,7 @@ private:
 };
 
 TEST(ObservableAction, execute) {
-  using action_graph::ObservableAction;
+  using action_graph::decorators::ObservableAction;
   std::stringstream log;
   auto action = std::make_unique<NoOperationAction>(log);
   auto observer = std::make_unique<TestExecutionObserver>(log);
@@ -63,7 +63,7 @@ public:
 };
 
 TEST(ObservableAction, execute_with_exception) {
-  using action_graph::ObservableAction;
+  using action_graph::decorators::ObservableAction;
   std::stringstream log;
   auto action = std::make_unique<ThrowingAction>();
   auto observer = std::make_unique<TestExecutionObserver>(log);

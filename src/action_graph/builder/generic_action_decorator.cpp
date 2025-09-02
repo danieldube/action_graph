@@ -4,6 +4,8 @@
 // License. See the LICENSE file in the root directory for full license text.
 
 #include <action_graph/builder/generic_action_decorator.h>
+#include <action_graph/decorators/timing_monitor.h>
+#include <action_graph/log.h>
 
 namespace action_graph {
 namespace builder {
