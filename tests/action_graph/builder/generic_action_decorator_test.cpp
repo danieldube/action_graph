@@ -5,17 +5,19 @@
 
 #include <action_graph/builder/configuration_node.h>
 #include <action_graph/builder/generic_action_decorator.h>
-#include <action_graph/decorated_action.h>
+#include <action_graph/decorators/decorated_action.h>
 #include <gtest/gtest.h>
 #include <memory>
 #include <native_configuration/map_node.h>
 #include <native_configuration/scalar_node.h>
 #include <native_configuration/sequence_node.h>
 #include <sstream>
+#include <test_clock.h>
+#include <test_log.h>
 
 using action_graph::Action;
 
-class PrintingAction : public Action {
+class PrintingAction final : public Action {
 public:
   explicit PrintingAction(std::ostream &stream)
       : stream_(stream), action_graph::Action("printing action") {}
@@ -25,13 +27,13 @@ private:
   std::ostream &stream_;
 };
 
-using action_graph::DecoratedAction;
 using action_graph::builder::ActionObject;
+using action_graph::decorators::DecoratedAction;
 
-class NameDecorator : public DecoratedAction {
+class NameDecorator final : public DecoratedAction {
 public:
   NameDecorator(ActionObject action, std::string name, std::ostream &stream)
-      : action_graph::DecoratedAction(std::move(action)),
+      : action_graph::decorators::DecoratedAction(std::move(action)),
         name_(std::move(name)), stream_(stream) {}
 
   void Execute() override {
@@ -63,9 +65,10 @@ TEST(GenericActionDecoratorTest, DecorateActionWithNameDecorator) {
 
   using action_graph::builder::ConfigurationNode;
   auto name_decorator = [&output](const ConfigurationNode &node,
-                                  ActionObject action) {
+                                  ActionObject action_to_decorate) {
     auto name = node.Get("name").AsString();
-    return std::make_unique<NameDecorator>(std::move(action), name, output);
+    return std::make_unique<NameDecorator>(std::move(action_to_decorate), name,
+                                           output);
   };
   decorator_builder.AddDecoratorFunction("NameDecorator", name_decorator);
 
@@ -73,6 +76,29 @@ TEST(GenericActionDecoratorTest, DecorateActionWithNameDecorator) {
   action->Execute();
 
   // Check output
-  std::string expected = "second(first(TestAction))";
+  const std::string expected = "second(first(TestAction))";
   EXPECT_EQ(output.str(), expected);
+}
+
+const MapNode kTimeMonitorDecoratorConfig{
+    std::make_pair("duration_limit", ScalarNode{"10 milliseconds"}),
+    std::make_pair("expected_period", ScalarNode{"100 milliseconds"})};
+
+using action_graph::builder::DecorateWithTimingMonitor;
+
+TEST(DecorateWithTimingMonitor, DecorateActionWithTimingMonitor) {
+  TestLog log{};
+  ActionObject action = std::make_unique<PrintingAction>(std::cout);
+  action = DecorateWithTimingMonitor<TestClock>(kTimeMonitorDecoratorConfig,
+                                                std::move(action), log);
+
+  action->Execute();
+  TestClock::advance_time(std::chrono::milliseconds(100));
+  action->Execute();
+  TestClock::advance_time(std::chrono::milliseconds(1000));
+  action->Execute();
+
+  const std::vector<std::string> expected_log{
+      "Error: The period for action printing action exceeded the limit."};
+  EXPECT_EQ(log.log, expected_log);
 }

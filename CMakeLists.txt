@@ -3,7 +3,7 @@
 # This file is part of the action_graph library and is licensed under the MIT
 # License. See the LICENSE file in the root directory for full license text.
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.23)
 project(action_graph)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

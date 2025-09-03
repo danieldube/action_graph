@@ -23,6 +23,7 @@ using ActionObject = std::unique_ptr<Action>;
 
 class ActionBuilder {
 public:
+  virtual ~ActionBuilder() = default;
   virtual ActionObject operator()(const ConfigurationNode &node) const = 0;
 };
 
