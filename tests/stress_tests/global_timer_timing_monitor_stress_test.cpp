@@ -30,7 +30,7 @@ public:
            50) {
       asm volatile("");
     }
-    exec_count_++;
+    ++exec_count_;
   }
 
 private:
@@ -45,7 +45,7 @@ void BurnCpuCycles() {
 }
 
 TEST(GlobalTimerTimingMonitor, StressTest) {
-  const int cpu_count = std::thread::hardware_concurrency();
+  const auto cpu_count = std::thread::hardware_concurrency();
   ASSERT_GT(cpu_count, 1) << "Test requires at least 2 CPU cores.";
 
   // Keep (cpu_count - 1) threads busy
@@ -64,8 +64,8 @@ TEST(GlobalTimerTimingMonitor, StressTest) {
   std::atomic<int> missed_periods{0};
 
   // TimingMonitor callbacks
-  auto on_duration_exceeded = [&overruns]() { overruns++; };
-  auto on_trigger_miss = [&missed_periods]() { missed_periods++; };
+  auto on_duration_exceeded = [&overruns]() { ++overruns; };
+  auto on_trigger_miss = [&missed_periods]() { ++missed_periods; };
 
   // Create the busy action
   auto busy_action = std::make_unique<BusyAction>("busy_action", exec_count);
