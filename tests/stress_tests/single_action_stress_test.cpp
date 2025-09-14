@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cmath>
 #include <gtest/gtest.h>
+#include <pstl/glue_execution_defs.h>
 #include <thread>
 #include <vector>
 
@@ -18,31 +19,33 @@ using action_graph::Action;
 using action_graph::GlobalTimer;
 using action_graph::decorators::TimingMonitor;
 
-class BusyAction final : public Action {
-public:
-  BusyAction(std::string name, std::atomic<int> &exec_count)
-      : Action(std::move(name)), exec_count_(exec_count) {}
-
-  void Execute() override {
-    auto start = steady_clock::now();
-    // Busy loop for ~50ms
-    while (duration_cast<milliseconds>(steady_clock::now() - start).count() <
-           50) {
-      asm volatile("");
-    }
-    ++exec_count_;
-  }
-
-private:
-  std::atomic<int> &exec_count_;
-};
-
 void BurnCpuCycles() {
   volatile double x = 0.0;
   for (int index = 0; index < 10000; ++index) {
     x += std::sqrt(static_cast<double>(index));
   }
 }
+
+class BusyAction final : public Action {
+public:
+  BusyAction(std::string name, std::atomic<int> &exec_count,
+             const std::chrono::milliseconds &duration)
+      : Action(std::move(name)), exec_count_(exec_count), duration_(duration) {}
+
+  void Execute() override {
+    auto start = steady_clock::now();
+    // Busy loop for specified duration
+    while (duration_cast<milliseconds>(steady_clock::now() - start) <
+           duration_) {
+      BurnCpuCycles();
+    }
+    ++exec_count_;
+  }
+
+private:
+  std::atomic<int> &exec_count_;
+  std::chrono::milliseconds duration_;
+};
 
 TEST(GlobalTimerTimingMonitor, StressTest) {
   const auto cpu_count = std::thread::hardware_concurrency();
@@ -63,46 +66,44 @@ TEST(GlobalTimerTimingMonitor, StressTest) {
   std::atomic<int> overruns{0};
   std::atomic<int> missed_periods{0};
 
-  // TimingMonitor callbacks
   auto on_duration_exceeded = [&overruns]() { ++overruns; };
   auto on_trigger_miss = [&missed_periods]() { ++missed_periods; };
 
-  // Create the busy action
-  auto busy_action = std::make_unique<BusyAction>("busy_action", exec_count);
+  constexpr auto kExecutionDuration = 50ms;
+  constexpr auto kActionPeriod = 100ms;
+  constexpr auto kAcceptedOverrunMargin = 10ms;
 
-  // Decorate with TimingMonitor
+  auto busy_action = std::make_unique<BusyAction>("busy_action", exec_count,
+                                                  kExecutionDuration);
   using Clock = std::chrono::steady_clock;
-  auto monitored_action =
-      std::make_unique<TimingMonitor<Clock>>(std::move(busy_action),
-                                             milliseconds(60), // duration limit
-                                             on_duration_exceeded,
-                                             milliseconds(110), // period
-                                             on_trigger_miss);
+  auto monitored_action = std::make_unique<TimingMonitor<Clock>>(
+      std::move(busy_action),
+      kExecutionDuration + kAcceptedOverrunMargin, // duration limit
+      on_duration_exceeded,
+      kActionPeriod + kAcceptedOverrunMargin, // period
+      on_trigger_miss);
 
   // Create GlobalTimer and schedule the monitored action
   GlobalTimer<Clock> timer;
-  timer.SetTriggerTime(milliseconds(100),
+  timer.SetTriggerTime(kActionPeriod,
                        [monitored_action_ptr = monitored_action.get()]() {
                          monitored_action_ptr->Execute();
                        });
 
-  // Run for 10 seconds
-  std::this_thread::sleep_for(seconds(10));
+  constexpr auto kTestDuration = 10s;
+  std::this_thread::sleep_for(kTestDuration);
 
-  // Stop stress threads
   keep_running = false;
   for (auto &t : stress_threads) {
     t.join();
   }
 
-  // Check results
   int total_executions = exec_count.load();
   int total_overruns = overruns.load();
   int total_missed = missed_periods.load();
 
-  // Allow a small margin for missed deadlines due to OS scheduling
-  EXPECT_LE(total_overruns, 2)
+  EXPECT_LE(total_overruns, 0)
       << "Too many duration overruns: " << total_overruns;
-  EXPECT_LE(total_missed, 2) << "Too many period misses: " << total_missed;
-  EXPECT_GE(total_executions, 95) << "Too few executions: " << total_executions;
+  EXPECT_LE(total_missed, 0) << "Too many period misses: " << total_missed;
+  EXPECT_GE(total_executions, 99) << "Too few executions: " << total_executions;
 }
