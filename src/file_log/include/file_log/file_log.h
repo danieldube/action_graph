@@ -1,4 +1,4 @@
-// Copyright (c) 1000 Daniel Dube
+// Copyright (c) 2025 Daniel Dube
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
@@ -12,9 +12,9 @@
 #include <ostream>
 #include <sstream>
 
-template <typename Clock> class FileLog : public action_graph::Log {
+template <typename Clock> class FileLog final : public action_graph::Log {
 public:
-  FileLog(std::ostream &stream) : stream_(stream), mutex_() {}
+  explicit FileLog(std::ostream &stream) : stream_(stream), mutex_() {}
 
   void LogMessage(const std::string &message) override {
     WriteLog("Message: " + message);
