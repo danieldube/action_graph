@@ -6,3 +6,4 @@
 add_subdirectory(action_graph)
 add_subdirectory(native_configuration)
 add_subdirectory(yaml_cpp_configuration)
+add_subdirectory(file_log)

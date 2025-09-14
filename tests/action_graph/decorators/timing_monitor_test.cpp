@@ -51,7 +51,7 @@ protected:
   TestClock::duration action_duration{100ms};
   TestClock::duration period{200ms};
   TestClock::duration duration_between_calls{period - action_duration};
-  TestClock::duration setup_duration{10ms};
+  TestClock::duration setup_duration{30ms};
 
   std::unique_ptr<TimingMonitor<TestClock>> timing_action;
 

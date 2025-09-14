@@ -31,7 +31,8 @@ public:
     CheckTriggerMiss();
     const auto start = Clock::now();
     GetAction().Execute();
-    const auto duration = Clock::now() - start;
+    const auto end = Clock::now();
+    const auto duration = end - start;
     if (duration > duration_limit_) {
       on_duration_exceeded_();
     }
@@ -40,8 +41,8 @@ public:
 private:
   void CheckTriggerMiss() {
     const auto now = Clock::now();
-    static const Duration kAcceptableDelay = period_;
-    if (now - last_execution_time_ > kAcceptableDelay) {
+    const Duration k_acceptable_delay = period_;
+    if (now - last_execution_time_ > k_acceptable_delay) {
       on_trigger_miss_();
     }
     last_execution_time_ = now;
