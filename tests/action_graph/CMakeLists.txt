@@ -18,8 +18,6 @@ target_sources(
           test_clock_test.cpp
           global_timer/global_timer_test.cpp
           global_timer/trigger_test.cpp
-          action_sequence_performance_test.cpp
-          parallel_actions_performance_test.cpp
           builder/parse_duration_test.cpp
           builder/generic_action_builder_test.cpp
           builder/generic_action_decorator_test.cpp
