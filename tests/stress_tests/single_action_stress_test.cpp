@@ -107,8 +107,8 @@ TEST_F(GlobalTimerTimingMonitorStressTest, StressTest) {
   const int total_executions = exec_count.load();
   const int total_overruns = overruns.load();
   const int total_missed = missed_periods.load();
-  EXPECT_LE(total_overruns, 0)
+  EXPECT_EQ(total_overruns, 0)
       << "Too many duration overruns: " << total_overruns;
-  EXPECT_LE(total_missed, 0) << "Too many period misses: " << total_missed;
+  EXPECT_EQ(total_missed, 0) << "Too many period misses: " << total_missed;
   EXPECT_GE(total_executions, 99) << "Too few executions: " << total_executions;
 }
