@@ -13,6 +13,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <thread>
+#include <vector>
 
 #include <action_graph/global_timer/trigger.h>
 

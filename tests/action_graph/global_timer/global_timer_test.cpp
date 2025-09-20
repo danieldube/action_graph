@@ -25,14 +25,14 @@ protected:
 };
 
 TEST_F(GlobalTimerTest, set_trigger) {
-  auto timer = GlobalTimer<TestClock>{};
+  GlobalTimer<TestClock> timer{};
   timer.SetTriggerTime(std::chrono::milliseconds{2}, []() {});
 }
 
 TEST_F(GlobalTimerTest, one_trigger) {
   size_t trigger_counter{0};
   {
-    auto timer = GlobalTimer<TestClock>{};
+    GlobalTimer<TestClock> timer{};
 
     timer.SetTriggerTime(std::chrono::milliseconds{2},
                          [&trigger_counter]() { ++trigger_counter; });
@@ -50,7 +50,7 @@ TEST_F(GlobalTimerTest, two_triggers) {
   size_t trigger_counter_one{0};
   size_t trigger_counter_two{0};
   {
-    auto timer = GlobalTimer<TestClock>{};
+    GlobalTimer<TestClock> timer{};
 
     timer.SetTriggerTime(std::chrono::milliseconds{1},
                          [&trigger_counter_one]() { ++trigger_counter_one; });
@@ -69,7 +69,7 @@ TEST_F(GlobalTimerTest, two_triggers) {
 
 TEST_F(GlobalTimerTest, time_jump_backwards) {
   size_t trigger_counter_one{0};
-  auto timer = GlobalTimer<TestClock>{};
+  GlobalTimer<TestClock> timer{};
 
   timer.SetTriggerTime(std::chrono::milliseconds{10},
                        [&trigger_counter_one]() { ++trigger_counter_one; });
@@ -107,7 +107,7 @@ private:
 TEST_F(GlobalTimerTest, mix_high_frequency_with_low_frequency) {
   ThreadSafeLog log;
   {
-    auto timer = GlobalTimer<TestClock>{};
+    GlobalTimer<TestClock> timer{};
 
     timer.SetTriggerTime(std::chrono::milliseconds{3}, [&log]() {
       auto now = TestClock::now();
