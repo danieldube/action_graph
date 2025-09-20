@@ -13,6 +13,7 @@ target_link_libraries(stress_tests PRIVATE GTest::gtest_main
                                            action_graph::action_graph)
 
 target_compile_features(stress_tests PRIVATE cxx_std_14)
+set_target_properties(stress_tests PROPERTIES CXX_EXTENSIONS OFF)
 
 include(CTest)
 include(GoogleTest)
