@@ -91,7 +91,7 @@ protected:
     collect_metrics.store(true, std::memory_order_relaxed);
     stress_threads.clear();
     const auto stress_thread_count =
-        cpu_count > 2 ? static_cast<int>(cpu_count - 2) : 1;
+        cpu_count > 1 ? static_cast<int>(cpu_count - 1) : 1;
     for (int i = 0; i < stress_thread_count; ++i) {
       stress_threads.emplace_back([this, duration]() {
         const auto start = std::chrono::steady_clock::now();
