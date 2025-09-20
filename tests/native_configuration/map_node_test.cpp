@@ -45,7 +45,7 @@ TEST_F(MapNodeFixture, get_by_index) {
   EXPECT_THROW(node.Get(0), NotFound);
 }
 
-TEST_F(MapNodeFixture, Size) { EXPECT_EQ(node.Size(), 0); }
+TEST_F(MapNodeFixture, Size) { EXPECT_EQ(node.Size(), 3); }
 
 TEST_F(MapNodeFixture, AsString) {
   EXPECT_EQ(node.AsString(), "key1: value1\n"

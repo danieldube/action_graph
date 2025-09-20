@@ -7,7 +7,10 @@
 #define ACTION_GRAPH_SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_SEQUENCE_NODE_H_
 
 #include <action_graph/builder/configuration_node.h>
+#include <memory>
 #include <sstream>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace action_graph {
@@ -19,11 +22,9 @@ public:
   explicit SequenceNode(std::vector<ConfigurationNode::Pointer> entries)
       : entries_(std::move(entries)) {}
 
-  template <typename... Nodes> explicit SequenceNode(Nodes &&...nodes) {
+  template <typename... Nodes> explicit SequenceNode(Nodes... nodes) {
     entries_.reserve(sizeof...(nodes));
-    (entries_.emplace_back(
-         std::make_unique<std::decay_t<Nodes>>(std::forward<Nodes>(nodes))),
-     ...);
+    AddEntries(std::move(nodes)...);
   }
 
   bool IsScalar() const noexcept override { return false; }
@@ -52,6 +53,16 @@ public:
   }
 
 private:
+  void AddEntries() {}
+
+  template <typename Node, typename... Remaining>
+  void AddEntries(Node node, Remaining... remaining) {
+    using NodeType = typename std::decay<Node>::type;
+    entries_.emplace_back(
+        std::make_unique<NodeType>(std::move(node)));
+    AddEntries(std::move(remaining)...);
+  }
+
   std::vector<ConfigurationNode::Pointer> entries_;
 };
 

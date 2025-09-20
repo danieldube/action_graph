@@ -9,6 +9,7 @@
 #include "executor_log.h"
 #include <action_graph/parallel_actions.h>
 #include <algorithm>
+#include <cstddef>
 #include <gtest/gtest.h>
 
 using action_graph::Action;
@@ -54,12 +55,14 @@ TEST(ParallelActions, execute) {
   branches.Execute();
 
   auto entries = log.GetLog();
-  std::for_each_n(std::begin(entries), 3, [](const auto &entry) {
+  for (std::size_t index = 0; index < 3; ++index) {
+    const auto &entry = entries[index];
     EXPECT_EQ(entry.find("start: "), 0);
-  });
-  std::for_each_n(std::begin(entries) + 3, 3, [](const auto &entry) {
+  }
+  for (std::size_t index = 3; index < 6; ++index) {
+    const auto &entry = entries[index];
     EXPECT_EQ(entry.find("stop: "), 0);
-  });
+  }
 }
 
 #endif // ACTION_GRAPH_TESTS_PARALLEL_ACTIONS_TEST_H_

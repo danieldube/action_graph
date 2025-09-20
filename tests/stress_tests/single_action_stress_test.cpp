@@ -13,6 +13,8 @@
 #include <thread>
 #include <vector>
 
+using namespace std::chrono_literals;
+
 using namespace std::chrono;
 using action_graph::Action;
 using action_graph::GlobalTimer;
@@ -98,6 +100,14 @@ protected:
     }
   }
 };
+
+constexpr std::chrono::milliseconds
+    GlobalTimerTimingMonitorStressTest::kExecutionDuration;
+constexpr std::chrono::milliseconds
+    GlobalTimerTimingMonitorStressTest::kActionPeriod;
+constexpr std::chrono::milliseconds
+    GlobalTimerTimingMonitorStressTest::kAcceptedOverrunMargin;
+constexpr std::chrono::seconds GlobalTimerTimingMonitorStressTest::kTestDuration;
 
 TEST_F(GlobalTimerTimingMonitorStressTest, StressTest) {
   StartStressTestsAsynchronously(kTestDuration);
