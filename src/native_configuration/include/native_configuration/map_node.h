@@ -7,6 +7,8 @@
 #define ACTION_GRAPH_SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_MAP_NODE_H_
 
 #include <action_graph/builder/configuration_node.h>
+#include <cstddef>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -47,8 +49,12 @@ public:
   }
 
   Reference Get(std::size_t index) const override {
-    throw ConfigurationNodeNotFound("Map Node does not support index access",
-                                    *this);
+    if (index >= entries_.size()) {
+      throw ConfigurationNodeNotFound("Index is out of range.", *this);
+    }
+    auto it = entries_.cbegin();
+    std::advance(it, static_cast<std::ptrdiff_t>(index));
+    return *it->second;
   }
 
   std::size_t Size() const noexcept override { return entries_.size(); }

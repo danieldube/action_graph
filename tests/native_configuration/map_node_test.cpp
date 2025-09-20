@@ -42,7 +42,8 @@ TEST_F(MapNodeFixture, get_by_key) {
 
 TEST_F(MapNodeFixture, get_by_index) {
   using NotFound = ConfigurationNode::ConfigurationNodeNotFound;
-  EXPECT_THROW(node.Get(0), NotFound);
+  EXPECT_EQ(node.Get(0).AsString(), "value1");
+  EXPECT_THROW(node.Get(3), NotFound);
 }
 
 TEST_F(MapNodeFixture, Size) { EXPECT_EQ(node.Size(), 3); }
