@@ -36,4 +36,7 @@ target_sources(
 
 target_include_directories(action_graph PUBLIC include)
 
+target_compile_features(action_graph PUBLIC cxx_std_14)
+set_target_properties(action_graph PROPERTIES CXX_EXTENSIONS OFF)
+
 add_library(action_graph::action_graph ALIAS action_graph)
