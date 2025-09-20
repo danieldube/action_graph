@@ -32,7 +32,8 @@ target_sources(
          include/action_graph/decorators/execution_observer.h
          include/action_graph/decorators/observable_action.h
          include/action_graph/decorators/decorated_action.h
-         include/action_graph/decorators/timing_monitor.h)
+         include/action_graph/decorators/timing_monitor.h
+         include/action_graph/statistics/online_distribution_estimator.h)
 
 target_include_directories(action_graph PUBLIC include)
 
