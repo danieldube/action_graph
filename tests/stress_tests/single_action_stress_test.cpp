@@ -107,7 +107,8 @@ constexpr std::chrono::milliseconds
     GlobalTimerTimingMonitorStressTest::kActionPeriod;
 constexpr std::chrono::milliseconds
     GlobalTimerTimingMonitorStressTest::kAcceptedOverrunMargin;
-constexpr std::chrono::seconds GlobalTimerTimingMonitorStressTest::kTestDuration;
+constexpr std::chrono::seconds
+    GlobalTimerTimingMonitorStressTest::kTestDuration;
 
 TEST_F(GlobalTimerTimingMonitorStressTest, StressTest) {
   StartStressTestsAsynchronously(kTestDuration);

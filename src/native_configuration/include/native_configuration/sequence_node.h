@@ -58,8 +58,7 @@ private:
   template <typename Node, typename... Remaining>
   void AddEntries(Node node, Remaining... remaining) {
     using NodeType = typename std::decay<Node>::type;
-    entries_.emplace_back(
-        std::make_unique<NodeType>(std::move(node)));
+    entries_.emplace_back(std::make_unique<NodeType>(std::move(node)));
     AddEntries(std::move(remaining)...);
   }
 
