@@ -6,7 +6,6 @@
 #include "example_support.h"
 
 #include <action_graph/builder/builder.h>
-#include <action_graph/builder/generic_action_decorator.h>
 #include <action_graph/builder/parse_duration.h>
 #include <action_graph/single_action.h>
 
@@ -343,29 +342,29 @@ ExampleActionBuilder::ExampleActionBuilder(ExampleContext &context)
       });
 }
 
-action_graph::builder::ActionObject ExampleActionBuilder::operator()(
+action_graph::builder::ActionObject ExampleActionBuilder::Build(
     const action_graph::builder::ConfigurationNode &node) const {
   auto action = action_builder_(node);
   return decorator_builder_(node, std::move(action));
 }
 
-action_graph::builder::GenericActionBuilder &ExampleActionBuilder::Actions() {
-  return action_builder_;
+void ExampleActionBuilder::AddBuilderFunction(
+    const std::string &action_type,
+    action_graph::builder::BuilderFunction builder_function) {
+  action_builder_.AddBuilderFunction(action_type, std::move(builder_function));
 }
 
-const action_graph::builder::GenericActionBuilder &
-ExampleActionBuilder::Actions() const {
-  return action_builder_;
+void ExampleActionBuilder::AddDecoratorFunction(
+    const std::string &decorator_type,
+    action_graph::builder::DecorateFunction decorator_function) {
+  decorator_builder_.AddDecoratorFunction(decorator_type,
+                                          std::move(decorator_function));
 }
 
-action_graph::builder::GenericActionDecorator &
-ExampleActionBuilder::Decorators() {
-  return decorator_builder_;
-}
+ExampleContext &ExampleActionBuilder::Context() { return context_.get(); }
 
-const action_graph::builder::GenericActionDecorator &
-ExampleActionBuilder::Decorators() const {
-  return decorator_builder_;
+const ExampleContext &ExampleActionBuilder::Context() const {
+  return context_.get();
 }
 
 ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context) {
@@ -374,7 +373,7 @@ ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context) {
 
   ExampleActionBuilder builder(context);
 
-  builder.Actions().AddBuilderFunction(
+  builder.AddBuilderFunction(
       "log_message",
       [&context](const ConfigurationNode &node, const ActionBuilder &) {
         const auto name = node.Get("name").AsString();
@@ -398,35 +397,72 @@ ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context) {
             });
       });
 
-  builder.Actions().AddBuilderFunction(
-      "wait", [&context](const ConfigurationNode &node, const ActionBuilder &) {
-        const auto name = node.Get("name").AsString();
-        const auto duration_string = node.Get("duration").AsString();
-        const auto parsed_duration =
-            action_graph::builder::ParseDuration(duration_string);
-        const auto wait_duration =
-            std::chrono::duration_cast<std::chrono::nanoseconds>(
-                parsed_duration);
-        return std::make_unique<action_graph::SingleAction>(
-            name, [name, duration_string, wait_duration, &context]() {
-              const auto offset = context.RecordExecution(name);
-              std::ostringstream start_message;
-              start_message << name << " (" << context.DescribeOffset(offset)
-                            << "): simulating work for " << duration_string;
-              context.Log(start_message.str());
+  builder.AddBuilderFunction("wait", [&context](const ConfigurationNode &node,
+                                                const ActionBuilder &) {
+    const auto name = node.Get("name").AsString();
+    const auto duration_string = node.Get("duration").AsString();
+    const auto parsed_duration =
+        action_graph::builder::ParseDuration(duration_string);
+    const auto wait_duration =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(parsed_duration);
+    return std::make_unique<action_graph::SingleAction>(
+        name, [name, duration_string, wait_duration, &context]() {
+          const auto offset = context.RecordExecution(name);
+          std::ostringstream start_message;
+          start_message << name << " (" << context.DescribeOffset(offset)
+                        << "): simulating work for " << duration_string;
+          context.Log(start_message.str());
 
-              const auto start_time = SteadyClock::now();
-              std::this_thread::sleep_for(wait_duration);
-              const auto elapsed = SteadyClock::now() - start_time;
+          const auto start_time = SteadyClock::now();
+          std::this_thread::sleep_for(wait_duration);
+          const auto elapsed = SteadyClock::now() - start_time;
 
-              std::ostringstream finish_message;
-              finish_message << name << ": finished simulated work in "
-                             << context.DescribeDuration(elapsed);
-              context.Log(finish_message.str());
-            });
-      });
+          std::ostringstream finish_message;
+          finish_message << name << ": finished simulated work in "
+                         << context.DescribeDuration(elapsed);
+          context.Log(finish_message.str());
+        });
+  });
 
   return builder;
+}
+
+std::vector<action_graph::builder::ActionObject> BuildScheduledActions(
+    const action_graph::yaml_cpp_configuration::Node &configuration,
+    ExampleActionBuilder &builder, Timer &timer) {
+  using action_graph::builder::ConfigurationError;
+
+  std::vector<action_graph::builder::ActionObject> created_actions;
+  for (std::size_t entry_index = 0; entry_index < configuration.Size();
+       ++entry_index) {
+    const auto &entry = configuration.Get(entry_index);
+    if (!entry.HasKey("trigger")) {
+      throw ConfigurationError("Only trigger nodes are allowed on top level.",
+                               entry);
+    }
+
+    const auto &trigger = entry.Get("trigger");
+    const auto trigger_name = trigger.Get("name").AsString();
+    const auto trigger_period_string = trigger.Get("period").AsString();
+    const auto trigger_period =
+        action_graph::builder::ParseDuration(trigger_period_string);
+    const auto casted_trigger_period =
+        std::chrono::duration_cast<SteadyClock::duration>(trigger_period);
+
+    auto action = builder.Build(trigger);
+    auto *action_ptr = action.get();
+
+    timer.SetTriggerTime(casted_trigger_period,
+                         [action_ptr]() { action_ptr->Execute(); });
+
+    std::ostringstream overview;
+    overview << "Scheduled trigger '" << trigger_name << "' every "
+             << trigger_period_string << ".";
+    builder.Context().Log(overview.str());
+
+    created_actions.push_back(std::move(action));
+  }
+  return created_actions;
 }
 
 ExampleSession::ExampleSession(std::ostream &out, std::string title,

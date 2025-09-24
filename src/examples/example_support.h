@@ -58,7 +58,7 @@ private:
   std::vector<std::string> action_order_;
 };
 
-class ExampleActionBuilder final : public action_graph::builder::ActionBuilder {
+class ExampleActionBuilder {
 public:
   explicit ExampleActionBuilder(ExampleContext &context);
   ExampleActionBuilder(const ExampleActionBuilder &) = delete;
@@ -66,14 +66,19 @@ public:
   ExampleActionBuilder(ExampleActionBuilder &&) noexcept = default;
   ExampleActionBuilder &operator=(ExampleActionBuilder &&) noexcept = default;
 
-  action_graph::builder::ActionObject operator()(
-      const action_graph::builder::ConfigurationNode &node) const override;
+  action_graph::builder::ActionObject
+  Build(const action_graph::builder::ConfigurationNode &node) const;
 
-  action_graph::builder::GenericActionBuilder &Actions();
-  const action_graph::builder::GenericActionBuilder &Actions() const;
+  void
+  AddBuilderFunction(const std::string &action_type,
+                     action_graph::builder::BuilderFunction builder_function);
 
-  action_graph::builder::GenericActionDecorator &Decorators();
-  const action_graph::builder::GenericActionDecorator &Decorators() const;
+  void AddDecoratorFunction(
+      const std::string &decorator_type,
+      action_graph::builder::DecorateFunction decorator_function);
+
+  ExampleContext &Context();
+  const ExampleContext &Context() const;
 
 private:
   action_graph::builder::GenericActionBuilder action_builder_;
@@ -82,6 +87,10 @@ private:
 };
 
 ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context);
+
+std::vector<action_graph::builder::ActionObject> BuildScheduledActions(
+    const action_graph::yaml_cpp_configuration::Node &configuration,
+    ExampleActionBuilder &builder, Timer &timer);
 
 class ExampleSession {
 public:

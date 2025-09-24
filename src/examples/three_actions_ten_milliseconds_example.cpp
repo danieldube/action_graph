@@ -7,7 +7,6 @@
 
 #include "example_support.h"
 
-#include <action_graph/builder/builder.h>
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -43,8 +42,8 @@ void RunThreeActionsTenMillisecondsExample() {
 )yaml");
 
   Timer timer;
-  const auto scheduled_actions = action_graph::builder::BuildActionGraph(
-      session.Configuration(), session.Builder(), timer);
+  const auto scheduled_actions =
+      BuildScheduledActions(session.Configuration(), session.Builder(), timer);
   const auto trigger_summary =
       DescribeCount(scheduled_actions.size(), "action", "actions");
   session.Context().Log("Timer configured " + trigger_summary +
