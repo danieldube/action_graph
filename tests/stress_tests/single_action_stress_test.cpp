@@ -67,7 +67,7 @@ protected:
     keep_running = true;
     stress_threads.clear();
     for (int i = 0; i < cpu_count - 1; ++i) {
-      SpawnThreadToBurnCpuCycles(keep_running);
+      stress_threads.push_back(SpawnThreadToBurnCpuCycles(keep_running));
     }
   }
 
@@ -85,16 +85,15 @@ protected:
                          [this]() { monitored_action->Execute(); });
   }
 
-  static void
+  static std::thread
   SpawnThreadToBurnCpuCycles(const std::atomic<bool> &keep_running) {
-    std::thread(
+    return std::thread(
         [](const std::atomic<bool> &keep_running) {
           while (keep_running.load(std::memory_order_relaxed)) {
             BurnCpuCycles();
           }
         },
-        std::ref(keep_running))
-        .detach();
+        std::ref(keep_running));
   }
 
   void TearDown() override {
