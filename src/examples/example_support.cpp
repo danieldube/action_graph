@@ -21,39 +21,33 @@ namespace {
 
 using ::action_graph::builder::ConfigurationNode;
 
-bool TryGetScalar(const ConfigurationNode &node, const std::string &key,
-                  std::string &value) {
+std::string GetScalarOrEmpty(const ConfigurationNode &node,
+                             const std::string &key) {
   if (!node.HasKey(key)) {
-    return false;
+    return {};
   }
-  value = node.Get(key).AsString();
-  return true;
+  return node.Get(key).AsString();
 }
 
 std::string FormatActionName(const ConfigurationNode &action_node) {
-  std::string action_name;
-  if (!TryGetScalar(action_node, "name", action_name)) {
+  const auto action_name = GetScalarOrEmpty(action_node, "name");
+  if (action_name.empty()) {
     return "an unnamed action";
   }
   return "'" + action_name + "'";
 }
 
-bool TryGetActionType(const ConfigurationNode &action_node,
-                      std::string &action_type) {
-  return TryGetScalar(action_node, "type", action_type);
-}
-
 std::string BuildLogMessageDetail(const ConfigurationNode &action_node) {
-  std::string message;
-  if (!TryGetScalar(action_node, "message", message)) {
+  const auto message = GetScalarOrEmpty(action_node, "message");
+  if (message.empty()) {
     return {};
   }
   return ": \"" + message + "\"";
 }
 
 std::string BuildWaitDetail(const ConfigurationNode &action_node) {
-  std::string duration;
-  if (!TryGetScalar(action_node, "duration", duration)) {
+  const auto duration = GetScalarOrEmpty(action_node, "duration");
+  if (duration.empty()) {
     return {};
   }
   return ": waits " + duration;
@@ -85,8 +79,8 @@ std::string ComposeSummary(const std::string &action_name,
 
 std::string DescribeActionSummary(const ConfigurationNode &action_node) {
   const auto action_name = FormatActionName(action_node);
-  std::string action_type;
-  if (!TryGetActionType(action_node, action_type)) {
+  const auto action_type = GetScalarOrEmpty(action_node, "type");
+  if (action_type.empty()) {
     return action_name;
   }
   const auto detail = BuildActionDetail(action_type, action_node);
@@ -104,14 +98,6 @@ void LogActionEntry(const ConfigurationNode &action_node,
 bool IsCompositeType(const std::string &action_type) {
   return action_type == "sequential_actions" ||
          action_type == "parallel_actions";
-}
-
-bool NodeIsComposite(const ConfigurationNode &action_node,
-                     std::string &action_type) {
-  if (!TryGetActionType(action_node, action_type)) {
-    return false;
-  }
-  return IsCompositeType(action_type);
 }
 
 void DescribeActionTree(const ConfigurationNode &action_node,
@@ -132,8 +118,8 @@ void DescribeCompositeChildren(const ConfigurationNode &action_node,
 void DescribeActionTree(const ConfigurationNode &action_node,
                         examples::ExampleContext &context, int indent) {
   LogActionEntry(action_node, context, indent);
-  std::string action_type;
-  if (!NodeIsComposite(action_node, action_type)) {
+  const auto action_type = GetScalarOrEmpty(action_node, "type");
+  if (!IsCompositeType(action_type)) {
     return;
   }
   if (!action_node.HasKey("actions")) {
@@ -152,19 +138,15 @@ struct TriggerOverview {
 };
 
 std::string ExtractTriggerName(const ConfigurationNode &trigger_node) {
-  std::string name;
-  if (TryGetScalar(trigger_node, "name", name)) {
+  const auto name = GetScalarOrEmpty(trigger_node, "name");
+  if (!name.empty()) {
     return name;
   }
   return "(unnamed trigger)";
 }
 
 std::string ExtractPeriodText(const ConfigurationNode &trigger_node) {
-  std::string period;
-  if (TryGetScalar(trigger_node, "period", period)) {
-    return period;
-  }
-  return {};
+  return GetScalarOrEmpty(trigger_node, "period");
 }
 
 void LogPeriodParseError(examples::ExampleContext &context,
@@ -218,8 +200,8 @@ CollectDecorators(const ConfigurationNode &trigger_node) {
   const auto &decorate_sequence = trigger_node.Get("decorate");
   for (std::size_t index = 0; index < decorate_sequence.Size(); ++index) {
     const auto &decorator = decorate_sequence.Get(index);
-    std::string decorator_type;
-    if (TryGetScalar(decorator, "type", decorator_type)) {
+    const auto decorator_type = GetScalarOrEmpty(decorator, "type");
+    if (!decorator_type.empty()) {
       decorators.push_back(decorator_type);
     }
   }

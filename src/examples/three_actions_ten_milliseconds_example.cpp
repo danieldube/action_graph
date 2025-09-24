@@ -5,6 +5,7 @@
 
 #include "example_runners.h"
 
+#include "example_configurations.h"
 #include "example_support.h"
 
 #include <chrono>
@@ -15,30 +16,6 @@
 using namespace std::chrono_literals;
 
 namespace {
-
-constexpr char kHighFrequencyYaml[] = R"yaml(
-- trigger:
-    name: alpha
-    period: 10 milliseconds
-    action:
-      name: alpha_action
-      type: log_message
-      message: "Alpha fired."
-- trigger:
-    name: beta
-    period: 10 milliseconds
-    action:
-      name: beta_action
-      type: log_message
-      message: "Beta fired."
-- trigger:
-    name: gamma
-    period: 10 milliseconds
-    action:
-      name: gamma_action
-      type: log_message
-      message: "Gamma fired."
-)yaml";
 
 constexpr std::chrono::milliseconds kBurstObservationWindow{120};
 
@@ -73,7 +50,7 @@ namespace examples {
 void RunThreeActionsTenMillisecondsExample() {
   ExampleSession session(std::cout,
                          "Three actions triggered every 10 milliseconds",
-                         kHighFrequencyYaml);
+                         configurations::ThreeActionsTenMillisecondsYaml());
   Timer timer;
   auto actions = ScheduleHighFrequencyTriggers(session, timer);
   LogHighFrequencySummary(session, actions.size());

@@ -5,6 +5,7 @@
 
 #include "example_runners.h"
 
+#include "example_configurations.h"
 #include "example_support.h"
 
 #include <chrono>
@@ -15,28 +16,6 @@
 using namespace std::chrono_literals;
 
 namespace {
-
-constexpr char kMonitoredTimerYaml[] = R"yaml(
-- trigger:
-    name: monitored_job
-    period: 50 milliseconds
-    action:
-      name: monitored_steps
-      type: sequential_actions
-      decorate:
-        - type: timing_monitor
-          duration_limit: 30 milliseconds
-          expected_period: 50 milliseconds
-      actions:
-        - action:
-            name: measured_step
-            type: wait
-            duration: 60 milliseconds
-        - action:
-            name: announce_completion
-            type: log_message
-            message: "Monitored sequence finished."
-)yaml";
 
 constexpr std::chrono::milliseconds kMonitorObservationWindow{200};
 
@@ -76,7 +55,7 @@ namespace examples {
 void RunMonitoredTimerExample() {
   ExampleSession session(std::cout,
                          "Timing monitored graph triggered by a timer",
-                         kMonitoredTimerYaml);
+                         configurations::MonitoredTimerYaml());
   Timer timer;
   auto actions = ScheduleMonitoredActions(session, timer);
   LogMonitoredSummary(session, actions.size());

@@ -5,6 +5,7 @@
 
 #include "example_runners.h"
 
+#include "example_configurations.h"
 #include "example_support.h"
 
 #include <iostream>
@@ -12,37 +13,6 @@
 #include <string>
 
 namespace {
-
-constexpr char kOnboardingYaml[] = R"yaml(
-action:
-  name: onboarding_flow
-  type: sequential_actions
-  actions:
-    - action:
-        name: introduce
-        type: log_message
-        message: "Introduce the system to the user."
-    - action:
-        name: prepare_environment
-        type: parallel_actions
-        actions:
-          - action:
-              name: load_configuration
-              type: wait
-              duration: 5 milliseconds
-          - action:
-              name: warm_up_cache
-              type: log_message
-              message: "Cache is being warmed up."
-          - action:
-              name: notify_team
-              type: log_message
-              message: "Team notified about onboarding."
-    - action:
-        name: finalize
-        type: log_message
-        message: "Onboarding flow completed."
-)yaml";
 
 action_graph::builder::ActionObject
 BuildOnboardingAction(examples::ExampleSession &session) {
@@ -72,7 +42,7 @@ namespace examples {
 void RunGraphExecutionExample() {
   ExampleSession session(std::cout,
                          "Parallel and sequential graph executed once",
-                         kOnboardingYaml);
+                         configurations::GraphExecutionYaml());
   auto action = BuildOnboardingAction(session);
   ExecuteOnboardingFlow(session, action);
 }

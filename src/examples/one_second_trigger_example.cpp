@@ -5,6 +5,7 @@
 
 #include "example_runners.h"
 
+#include "example_configurations.h"
 #include "example_support.h"
 
 #include <chrono>
@@ -15,16 +16,6 @@
 using namespace std::chrono_literals;
 
 namespace {
-
-constexpr char kOneSecondTriggerYaml[] = R"yaml(
-- trigger:
-    name: heartbeat
-    period: 1 seconds
-    action:
-      name: heartbeat_action
-      type: log_message
-      message: "Heartbeat action executed."
-)yaml";
 
 constexpr std::chrono::seconds kHeartbeatObservationWindow{4};
 
@@ -57,7 +48,7 @@ namespace examples {
 
 void RunOneSecondTriggerExample() {
   ExampleSession session(std::cout, "One action triggered every second",
-                         kOneSecondTriggerYaml);
+                         configurations::OneSecondTriggerYaml());
   Timer timer;
   auto actions = ScheduleHeartbeat(session, timer);
   LogHeartbeatSummary(session, actions.size());
