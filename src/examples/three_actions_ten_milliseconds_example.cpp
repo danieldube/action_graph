@@ -10,15 +10,13 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std::chrono_literals;
 
-namespace examples {
+namespace {
 
-void RunThreeActionsTenMillisecondsExample() {
-  ExampleSession session(std::cout,
-                         "Three actions triggered every 10 milliseconds",
-                         R"yaml(
+constexpr char kHighFrequencyYaml[] = R"yaml(
 - trigger:
     name: alpha
     period: 10 milliseconds
@@ -40,20 +38,46 @@ void RunThreeActionsTenMillisecondsExample() {
       name: gamma_action
       type: log_message
       message: "Gamma fired."
-)yaml");
+)yaml";
 
-  Timer timer;
-  const auto scheduled_actions =
-      BuildScheduledActions(session.Configuration(), session.ActionBuilder(),
-                            session.Decorator(), session.Context(), timer);
-  const auto trigger_summary =
-      DescribeCount(scheduled_actions.size(), "action", "actions");
-  session.Context().Log("Timer configured " + trigger_summary +
+constexpr std::chrono::milliseconds kBurstObservationWindow{120};
+
+std::vector<action_graph::builder::ActionObject>
+ScheduleHighFrequencyTriggers(examples::ExampleSession &session,
+                              examples::Timer &timer) {
+  auto actions = examples::BuildScheduledActions(
+      session.Configuration(), session.ActionBuilder(), session.Decorator(),
+      session.Context(), timer);
+  return actions;
+}
+
+void LogHighFrequencySummary(examples::ExampleSession &session,
+                             std::size_t action_count) {
+  const auto summary =
+      examples::DescribeCount(action_count, "action", "actions");
+  session.Context().Log("Timer configured " + summary +
                         " that repeat every 10 milliseconds.");
+}
 
-  const auto observation_window = 120ms;
-  ObserveForDuration(session.Context(), timer, observation_window,
-                     "Collecting high-frequency events");
+void ObserveHighFrequency(examples::ExampleSession &session,
+                          examples::Timer &timer) {
+  examples::ObserveForDuration(session.Context(), timer,
+                               kBurstObservationWindow,
+                               "Collecting high-frequency events");
+}
+
+} // namespace
+
+namespace examples {
+
+void RunThreeActionsTenMillisecondsExample() {
+  ExampleSession session(std::cout,
+                         "Three actions triggered every 10 milliseconds",
+                         kHighFrequencyYaml);
+  Timer timer;
+  auto actions = ScheduleHighFrequencyTriggers(session, timer);
+  LogHighFrequencySummary(session, actions.size());
+  ObserveHighFrequency(session, timer);
 }
 
 } // namespace examples

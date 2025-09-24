@@ -49,6 +49,16 @@ private:
     std::vector<SteadyClock::duration> offsets;
   };
 
+  void UpdateStats(const std::string &action_name,
+                   SteadyClock::duration offset);
+  std::vector<std::string> BuildSummaryLines(const std::string &example_title);
+  void AppendActionSummary(const std::string &name, const ActionStats &stats,
+                           std::vector<std::string> &lines) const;
+  void AppendIntervalDetails(const ActionStats &stats,
+                             std::ostringstream &line) const;
+  void AppendActionSummaries(std::vector<std::string> &lines) const;
+  void LogSummaryLines(const std::vector<std::string> &lines);
+
   std::string FormatDuration(SteadyClock::duration duration) const;
   std::ostream &out_;
   SteadyClock::time_point start_time_;
@@ -98,6 +108,9 @@ public:
   BuildAction(const action_graph::builder::ConfigurationNode &node) const;
 
 private:
+  void LogSessionHeader();
+  void LogConfigurationYaml();
+  void LogSessionOverview();
   std::string title_;
   std::string configuration_yaml_;
   ExampleContext context_;

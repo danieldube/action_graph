@@ -10,15 +10,13 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std::chrono_literals;
 
-namespace examples {
+namespace {
 
-void RunMonitoredTimerExample() {
-  ExampleSession session(std::cout,
-                         "Timing monitored graph triggered by a timer",
-                         R"yaml(
+constexpr char kMonitoredTimerYaml[] = R"yaml(
 - trigger:
     name: monitored_job
     period: 50 milliseconds
@@ -38,22 +36,52 @@ void RunMonitoredTimerExample() {
             name: announce_completion
             type: log_message
             message: "Monitored sequence finished."
-)yaml");
+)yaml";
 
-  Timer timer;
-  const auto scheduled_actions =
-      BuildScheduledActions(session.Configuration(), session.ActionBuilder(),
-                            session.Decorator(), session.Context(), timer);
-  const auto trigger_summary = DescribeCount(
-      scheduled_actions.size(), "monitored trigger", "monitored triggers");
-  session.Context().Log("Timer configured " + trigger_summary +
+constexpr std::chrono::milliseconds kMonitorObservationWindow{200};
+
+std::vector<action_graph::builder::ActionObject>
+ScheduleMonitoredActions(examples::ExampleSession &session,
+                         examples::Timer &timer) {
+  auto actions = examples::BuildScheduledActions(
+      session.Configuration(), session.ActionBuilder(), session.Decorator(),
+      session.Context(), timer);
+  return actions;
+}
+
+void LogMonitoredSummary(examples::ExampleSession &session,
+                         std::size_t action_count) {
+  const auto summary = examples::DescribeCount(
+      action_count, "monitored trigger", "monitored triggers");
+  session.Context().Log("Timer configured " + summary +
                         " with a 30 ms budget and a 50 ms cadence.");
+}
+
+void DescribeTimingMonitor(examples::ExampleSession &session) {
   session.Context().Log(
       "The timing monitor will report budget overruns and missed periods.");
+}
 
-  const auto observation_window = 200ms;
-  ObserveForDuration(session.Context(), timer, observation_window,
-                     "Running monitored sequence");
+void ObserveMonitoredSequence(examples::ExampleSession &session,
+                              examples::Timer &timer) {
+  examples::ObserveForDuration(session.Context(), timer,
+                               kMonitorObservationWindow,
+                               "Running monitored sequence");
+}
+
+} // namespace
+
+namespace examples {
+
+void RunMonitoredTimerExample() {
+  ExampleSession session(std::cout,
+                         "Timing monitored graph triggered by a timer",
+                         kMonitoredTimerYaml);
+  Timer timer;
+  auto actions = ScheduleMonitoredActions(session, timer);
+  LogMonitoredSummary(session, actions.size());
+  DescribeTimingMonitor(session);
+  ObserveMonitoredSequence(session, timer);
 }
 
 } // namespace examples

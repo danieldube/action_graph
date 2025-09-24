@@ -10,14 +10,13 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std::chrono_literals;
 
-namespace examples {
+namespace {
 
-void RunOneSecondTriggerExample() {
-  ExampleSession session(std::cout, "One action triggered every second",
-                         R"yaml(
+constexpr char kOneSecondTriggerYaml[] = R"yaml(
 - trigger:
     name: heartbeat
     period: 1 seconds
@@ -25,20 +24,44 @@ void RunOneSecondTriggerExample() {
       name: heartbeat_action
       type: log_message
       message: "Heartbeat action executed."
-)yaml");
+)yaml";
 
-  Timer timer;
-  const auto scheduled_actions =
-      BuildScheduledActions(session.Configuration(), session.ActionBuilder(),
-                            session.Decorator(), session.Context(), timer);
-  const auto trigger_summary =
-      DescribeCount(scheduled_actions.size(), "action", "actions");
-  session.Context().Log("Timer configured " + trigger_summary +
+constexpr std::chrono::seconds kHeartbeatObservationWindow{4};
+
+std::vector<action_graph::builder::ActionObject>
+ScheduleHeartbeat(examples::ExampleSession &session, examples::Timer &timer) {
+  auto actions = examples::BuildScheduledActions(
+      session.Configuration(), session.ActionBuilder(), session.Decorator(),
+      session.Context(), timer);
+  return actions;
+}
+
+void LogHeartbeatSummary(examples::ExampleSession &session,
+                         std::size_t action_count) {
+  const auto summary =
+      examples::DescribeCount(action_count, "action", "actions");
+  session.Context().Log("Timer configured " + summary +
                         " to fire once per second.");
+}
 
-  const auto observation_window = 4s;
-  ObserveForDuration(session.Context(), timer, observation_window,
-                     "Observing heartbeat");
+void ObserveHeartbeat(examples::ExampleSession &session,
+                      examples::Timer &timer) {
+  examples::ObserveForDuration(session.Context(), timer,
+                               kHeartbeatObservationWindow,
+                               "Observing heartbeat");
+}
+
+} // namespace
+
+namespace examples {
+
+void RunOneSecondTriggerExample() {
+  ExampleSession session(std::cout, "One action triggered every second",
+                         kOneSecondTriggerYaml);
+  Timer timer;
+  auto actions = ScheduleHeartbeat(session, timer);
+  LogHeartbeatSummary(session, actions.size());
+  ObserveHeartbeat(session, timer);
 }
 
 } // namespace examples

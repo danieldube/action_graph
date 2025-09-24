@@ -11,12 +11,9 @@
 #include <memory>
 #include <string>
 
-namespace examples {
+namespace {
 
-void RunGraphExecutionExample() {
-  ExampleSession session(std::cout,
-                         "Parallel and sequential graph executed once",
-                         R"yaml(
+constexpr char kOnboardingYaml[] = R"yaml(
 action:
   name: onboarding_flow
   type: sequential_actions
@@ -45,13 +42,39 @@ action:
         name: finalize
         type: log_message
         message: "Onboarding flow completed."
-)yaml");
+)yaml";
 
-  auto action = session.BuildAction(session.Configuration());
+action_graph::builder::ActionObject
+BuildOnboardingAction(examples::ExampleSession &session) {
+  return session.BuildAction(session.Configuration());
+}
+
+void AnnounceOnboardingStart(examples::ExampleSession &session) {
   session.Context().Log(
       "Executing onboarding flow once to observe action order...");
-  action->Execute();
+}
+
+void AnnounceOnboardingFinish(examples::ExampleSession &session) {
   session.Context().Log("Onboarding flow execution finished.");
+}
+
+void ExecuteOnboardingFlow(examples::ExampleSession &session,
+                           action_graph::builder::ActionObject &action) {
+  AnnounceOnboardingStart(session);
+  action->Execute();
+  AnnounceOnboardingFinish(session);
+}
+
+} // namespace
+
+namespace examples {
+
+void RunGraphExecutionExample() {
+  ExampleSession session(std::cout,
+                         "Parallel and sequential graph executed once",
+                         kOnboardingYaml);
+  auto action = BuildOnboardingAction(session);
+  ExecuteOnboardingFlow(session, action);
 }
 
 } // namespace examples
