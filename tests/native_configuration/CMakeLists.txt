@@ -12,6 +12,9 @@ target_link_libraries(
   native_configuration_test PRIVATE GTest::gtest_main
                                     action_graph::native_configuration)
 
+target_compile_features(native_configuration_test PRIVATE cxx_std_14)
+set_target_properties(native_configuration_test PROPERTIES CXX_EXTENSIONS OFF)
+
 include(CTest)
 include(GoogleTest)
 gtest_discover_tests(native_configuration_test)

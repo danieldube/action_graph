@@ -17,7 +17,7 @@
 
 namespace action_graph {
 namespace native_configuration {
-class MapNode : public builder::ConfigurationNode {
+class MapNode final : public builder::ConfigurationNode {
 public:
   using Entry = std::pair<std::string, ConfigurationNode::Pointer>;
 
@@ -49,15 +49,11 @@ public:
   }
 
   Reference Get(std::size_t index) const override {
-    if (index >= entries_.size()) {
-      throw ConfigurationNodeNotFound("Index is out of range.", *this);
-    }
-    auto it = entries_.cbegin();
-    std::advance(it, static_cast<std::ptrdiff_t>(index));
-    return *it->second;
+    throw ConfigurationNodeNotFound("Map Node does not support index access",
+                                    *this);
   }
 
-  std::size_t Size() const noexcept override { return entries_.size(); }
+  std::size_t Size() const noexcept override { return 0; }
   std::string AsString() const noexcept override {
     std::stringstream stream;
     for (const auto &entry : entries_) {
@@ -67,7 +63,7 @@ public:
   }
 
 private:
-  void AddEntries() {}
+  static void AddEntries() {}
 
   template <typename Pair, typename... Remaining>
   void AddEntries(Pair pair, Remaining... remaining) {

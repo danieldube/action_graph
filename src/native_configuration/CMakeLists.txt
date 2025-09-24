@@ -20,4 +20,7 @@ target_sources(
 
 target_link_libraries(native_configuration INTERFACE action_graph::action_graph)
 
+target_compile_features(native_configuration INTERFACE cxx_std_14)
+set_target_properties(native_configuration PROPERTIES CXX_EXTENSIONS OFF)
+
 add_library(action_graph::native_configuration ALIAS native_configuration)

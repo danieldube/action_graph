@@ -35,6 +35,9 @@ target_link_libraries(
 
 target_include_directories(action_graph_test PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
+target_compile_features(action_graph_test PRIVATE cxx_std_14)
+set_target_properties(action_graph_test PROPERTIES CXX_EXTENSIONS OFF)
+
 include(CTest)
 include(GoogleTest)
 gtest_discover_tests(action_graph_test)

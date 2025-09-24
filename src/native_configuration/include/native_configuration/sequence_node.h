@@ -15,7 +15,7 @@
 
 namespace action_graph {
 namespace native_configuration {
-class SequenceNode : public builder::ConfigurationNode {
+class SequenceNode final : public builder::ConfigurationNode {
 public:
   using Entry = ConfigurationNode::Pointer;
 
@@ -53,7 +53,7 @@ public:
   }
 
 private:
-  void AddEntries() {}
+  static void AddEntries() {}
 
   template <typename Node, typename... Remaining>
   void AddEntries(Node node, Remaining... remaining) {

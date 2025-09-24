@@ -10,6 +10,7 @@ target_link_libraries(file_log_test PRIVATE GTest::gtest_main
                                             action_graph::file_log)
 
 target_compile_features(file_log_test PRIVATE cxx_std_14)
+set_target_properties(file_log_test PROPERTIES CXX_EXTENSIONS OFF)
 
 include(CTest)
 include(GoogleTest)

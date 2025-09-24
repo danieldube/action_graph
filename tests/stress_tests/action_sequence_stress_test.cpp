@@ -12,7 +12,7 @@ using action_graph::Action;
 using action_graph::ActionSequence;
 using action_graph::SingleAction;
 
-TEST(ActionSequencePerformance, many_actions) {
+TEST(ActionSequenceStressTest, many_actions) {
   constexpr std::size_t kActionsCount = 10000;
 
   std::vector<std::unique_ptr<Action>> actions;
@@ -30,7 +30,7 @@ TEST(ActionSequencePerformance, many_actions) {
   EXPECT_EQ(counter, kActionsCount);
 }
 
-TEST(ActionSequencePerformance, many_iterations) {
+TEST(ActionSequenceStressTest, many_iterations) {
   constexpr std::size_t kIterationCount = 100000;
   std::size_t counter = 0;
 

@@ -22,4 +22,7 @@ target_sources(
 target_link_libraries(yaml_cpp_configuration PUBLIC action_graph::action_graph
                                                     yaml-cpp::yaml-cpp)
 
+target_compile_features(yaml_cpp_configuration PUBLIC cxx_std_14)
+set_target_properties(yaml_cpp_configuration PROPERTIES CXX_EXTENSIONS OFF)
+
 add_library(action_graph::yaml_cpp_configuration ALIAS yaml_cpp_configuration)

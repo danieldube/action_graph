@@ -48,7 +48,7 @@ private:
   std::chrono::milliseconds duration_;
 };
 
-class GlobalTimerTimingMonitorStressTest : public ::testing::Test {
+class SingleActionStressTest : public ::testing::Test {
 protected:
   static constexpr auto kExecutionDuration = 50ms;
   static constexpr auto kActionPeriod = 100ms;
@@ -64,22 +64,12 @@ protected:
   GlobalTimer<std::chrono::steady_clock> timer;
 
   void StartStressTestsAsynchronously(std::chrono::milliseconds duration) {
-    const unsigned int reported_cpu_count = std::thread::hardware_concurrency();
-    const unsigned int available_cores =
-        reported_cpu_count > 0 ? reported_cpu_count : 2;
-    ASSERT_GT(available_cores, 1) << "Test requires at least 2 CPU cores.";
+    const auto cpu_count = std::thread::hardware_concurrency();
+    ASSERT_GT(cpu_count, 1) << "Test requires at least 2 CPU cores.";
     keep_running = true;
     stress_threads.clear();
-    const unsigned int worker_count = available_cores - 1;
-    const unsigned int limited_workers = worker_count > 4 ? 4 : worker_count;
-    for (unsigned int i = 0; i < limited_workers; ++i) {
-      stress_threads.emplace_back([this, duration]() {
-        const auto start = std::chrono::steady_clock::now();
-        while (keep_running.load(std::memory_order_relaxed) &&
-               std::chrono::steady_clock::now() - start < duration) {
-          BurnCpuCycles();
-        }
-      });
+    for (int i = 0; i < cpu_count - 1; ++i) {
+      stress_threads.push_back(SpawnThreadToBurnCpuCycles(keep_running));
     }
   }
 
@@ -97,6 +87,17 @@ protected:
                          [this]() { monitored_action->Execute(); });
   }
 
+  static std::thread
+  SpawnThreadToBurnCpuCycles(const std::atomic<bool> &keep_running) {
+    return std::thread(
+        [](const std::atomic<bool> &keep_running) {
+          while (keep_running.load(std::memory_order_relaxed)) {
+            BurnCpuCycles();
+          }
+        },
+        std::ref(keep_running));
+  }
+
   void TearDown() override {
     keep_running = false;
     for (auto &t : stress_threads) {
@@ -105,16 +106,7 @@ protected:
   }
 };
 
-constexpr std::chrono::milliseconds
-    GlobalTimerTimingMonitorStressTest::kExecutionDuration;
-constexpr std::chrono::milliseconds
-    GlobalTimerTimingMonitorStressTest::kActionPeriod;
-constexpr std::chrono::milliseconds
-    GlobalTimerTimingMonitorStressTest::kAcceptedOverrunMargin;
-constexpr std::chrono::seconds
-    GlobalTimerTimingMonitorStressTest::kTestDuration;
-
-TEST_F(GlobalTimerTimingMonitorStressTest, StressTest) {
+TEST_F(SingleActionStressTest, TenSeconds) {
   StartStressTestsAsynchronously(kTestDuration);
   ScheduleAction();
   std::this_thread::sleep_for(kTestDuration);
@@ -122,14 +114,16 @@ TEST_F(GlobalTimerTimingMonitorStressTest, StressTest) {
   const int total_executions = exec_count.load();
   const int total_overruns = overruns.load();
   const int total_missed = missed_periods.load();
-  const int expected_cycles = static_cast<int>(kTestDuration / kActionPeriod);
-  const int maximum_overruns = expected_cycles / 5;
-  const int maximum_missed_periods = expected_cycles / 5;
-  const int minimum_executions = expected_cycles - maximum_missed_periods;
-  EXPECT_LE(total_overruns, maximum_overruns)
+
+  constexpr int kMaximumAllowedOverruns = 2;
+  constexpr int kMaximumAllowedMissedPeriods = 2;
+  constexpr int kExpectedExecutions =
+      kTestDuration / kActionPeriod - kMaximumAllowedMissedPeriods - 1;
+
+  EXPECT_LE(total_overruns, kMaximumAllowedOverruns)
       << "Too many duration overruns: " << total_overruns;
-  EXPECT_LE(total_missed, maximum_missed_periods)
+  EXPECT_LE(total_missed, kMaximumAllowedMissedPeriods)
       << "Too many period misses: " << total_missed;
-  EXPECT_GE(total_executions, minimum_executions)
+  EXPECT_GE(total_executions, kExpectedExecutions)
       << "Too few executions: " << total_executions;
 }

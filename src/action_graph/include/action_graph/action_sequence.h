@@ -37,7 +37,7 @@ public:
   }
 
 private:
-  void AppendActions() {}
+  static void AppendActions() {}
 
   template <typename ActionPtr, typename... Remaining>
   void AppendActions(ActionPtr action, Remaining... remaining) {
