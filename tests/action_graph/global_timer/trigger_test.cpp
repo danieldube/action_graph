@@ -69,13 +69,11 @@ TEST_F(TriggerTest, trigger_once) {
 }
 
 TEST_F(TriggerTest, trigger_a_second_time_while_running) {
-  std::vector<std::string> expected_log{};
-
   trigger.TriggerAsynchronously();
   trigger.TriggerAsynchronously();
   GiveTriggerThreadTimeToProcess();
 
-  expected_log = {"running"};
+  std::vector<std::string> expected_log = {"running"};
   EXPECT_EQ(log.GetLog(), std::vector<std::string>{"running"});
 
   should_finish = true;

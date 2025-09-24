@@ -6,8 +6,8 @@
 add_executable(stress_tests)
 target_sources(
   stress_tests
-  PRIVATE action_sequence_performance_test.cpp
-          parallel_actions_performance_test.cpp single_action_stress_test.cpp)
+  PRIVATE action_sequence_stress_test.cpp parallel_actions_stress_test.cpp
+          single_action_stress_test.cpp)
 
 target_link_libraries(stress_tests PRIVATE GTest::gtest_main
                                            action_graph::action_graph)
