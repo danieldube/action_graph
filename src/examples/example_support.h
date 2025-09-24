@@ -13,6 +13,7 @@
 
 #include <chrono>
 #include <cstddef>
+#include <functional>
 #include <iosfwd>
 #include <map>
 #include <mutex>
@@ -35,7 +36,7 @@ public:
   template <typename Rep, typename Period>
   std::string
   DescribeDuration(std::chrono::duration<Rep, Period> duration) const {
-    return DescribeDurationImpl(
+    return FormatDuration(
         std::chrono::duration_cast<SteadyClock::duration>(duration));
   }
   std::string DescribeDuration(SteadyClock::duration duration) const;
@@ -50,8 +51,6 @@ private:
   };
 
   std::string FormatDuration(SteadyClock::duration duration) const;
-  std::string DescribeDurationImpl(SteadyClock::duration duration) const;
-
   std::ostream &out_;
   SteadyClock::time_point start_time_;
   std::mutex mutex_;
@@ -79,7 +78,7 @@ public:
 private:
   action_graph::builder::GenericActionBuilder action_builder_;
   action_graph::builder::GenericActionDecorator decorator_builder_;
-  ExampleContext *context_;
+  std::reference_wrapper<ExampleContext> context_;
 };
 
 ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context);

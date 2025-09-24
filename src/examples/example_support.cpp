@@ -11,10 +11,201 @@
 #include <action_graph/single_action.h>
 
 #include <chrono>
+#include <exception>
 #include <iomanip>
 #include <sstream>
 #include <thread>
 #include <utility>
+#include <vector>
+
+namespace {
+
+using ::action_graph::builder::ConfigurationNode;
+
+bool TryGetScalar(const ConfigurationNode &node, const std::string &key,
+                  std::string &value) {
+  if (!node.HasKey(key)) {
+    return false;
+  }
+  value = node.Get(key).AsString();
+  return true;
+}
+
+std::string DescribeActionSummary(const ConfigurationNode &action_node) {
+  std::string action_name;
+  const bool has_name = TryGetScalar(action_node, "name", action_name);
+  if (has_name) {
+    action_name = "'" + action_name + "'";
+  } else {
+    action_name = "an unnamed action";
+  }
+
+  std::string action_type;
+  if (!TryGetScalar(action_node, "type", action_type)) {
+    return action_name;
+  }
+
+  std::ostringstream summary;
+  summary << action_name << " [" << action_type << "]";
+
+  if (action_type == "log_message") {
+    std::string message;
+    if (TryGetScalar(action_node, "message", message)) {
+      summary << ": \"" << message << "\"";
+    }
+  } else if (action_type == "wait") {
+    std::string duration;
+    if (TryGetScalar(action_node, "duration", duration)) {
+      summary << ": waits " << duration;
+    }
+  }
+
+  return summary.str();
+}
+
+void DescribeActionTree(const ConfigurationNode &action_node,
+                        examples::ExampleContext &context, int indent) {
+  std::ostringstream line;
+  line << std::string(static_cast<std::size_t>(indent), ' ') << "- "
+       << DescribeActionSummary(action_node);
+  context.Log(line.str());
+
+  std::string action_type;
+  if (!TryGetScalar(action_node, "type", action_type)) {
+    return;
+  }
+
+  if (action_type == "sequential_actions" ||
+      action_type == "parallel_actions") {
+    if (!action_node.HasKey("actions")) {
+      return;
+    }
+
+    const auto &actions = action_node.Get("actions");
+    for (std::size_t index = 0; index < actions.Size(); ++index) {
+      const auto &entry = actions.Get(index);
+      if (!entry.HasKey("action")) {
+        continue;
+      }
+      DescribeActionTree(entry.Get("action"), context, indent + 4);
+    }
+  }
+}
+
+struct TriggerOverview {
+  std::string name;
+  examples::SteadyClock::duration period{};
+  bool has_period = false;
+  std::string period_text;
+  std::string action_summary;
+  std::vector<std::string> decorators;
+};
+
+TriggerOverview BuildTriggerOverview(const ConfigurationNode &trigger_entry,
+                                     examples::ExampleContext &context) {
+  const auto &trigger_node = trigger_entry.Get("trigger");
+  TriggerOverview overview;
+
+  if (!TryGetScalar(trigger_node, "name", overview.name)) {
+    overview.name = "(unnamed trigger)";
+  }
+
+  if (TryGetScalar(trigger_node, "period", overview.period_text)) {
+    try {
+      const auto parsed_period =
+          action_graph::builder::ParseDuration(overview.period_text);
+      overview.period =
+          std::chrono::duration_cast<examples::SteadyClock::duration>(
+              parsed_period);
+      overview.has_period = true;
+    } catch (const std::exception &error) {
+      std::ostringstream warning;
+      warning << "Unable to parse period for trigger '" << overview.name
+              << "': " << error.what();
+      context.LogError(warning.str());
+    }
+  }
+
+  if (trigger_node.HasKey("action")) {
+    overview.action_summary = DescribeActionSummary(trigger_node.Get("action"));
+  } else {
+    overview.action_summary = "(no action configured)";
+  }
+
+  if (trigger_node.HasKey("decorate")) {
+    const auto &decorate_sequence = trigger_node.Get("decorate");
+    for (std::size_t index = 0; index < decorate_sequence.Size(); ++index) {
+      const auto &decorator = decorate_sequence.Get(index);
+      std::string decorator_type;
+      if (TryGetScalar(decorator, "type", decorator_type)) {
+        overview.decorators.push_back(decorator_type);
+      }
+    }
+  }
+
+  return overview;
+}
+
+void LogTriggerOverview(const std::vector<TriggerOverview> &triggers,
+                        examples::ExampleContext &context) {
+  if (triggers.empty()) {
+    context.Log("No triggers were scheduled by this configuration.");
+    return;
+  }
+
+  context.Log("Configured triggers:");
+  for (const auto &trigger : triggers) {
+    std::ostringstream line;
+    line << "  - '" << trigger.name << "' fires every ";
+    if (trigger.has_period) {
+      line << context.DescribeDuration(trigger.period);
+    } else if (!trigger.period_text.empty()) {
+      line << trigger.period_text;
+    } else {
+      line << "(unspecified period)";
+    }
+    line << " and executes " << trigger.action_summary;
+    if (!trigger.decorators.empty()) {
+      line << " (decorated by ";
+      for (std::size_t index = 0; index < trigger.decorators.size(); ++index) {
+        if (index > 0) {
+          line << ", ";
+        }
+        line << trigger.decorators[index];
+      }
+      line << ')';
+    }
+    context.Log(line.str());
+  }
+}
+
+void LogConfigurationOverview(
+    const action_graph::yaml_cpp_configuration::Node &configuration,
+    examples::ExampleContext &context) {
+  if (configuration.IsSequence()) {
+    std::vector<TriggerOverview> trigger_overviews;
+    for (std::size_t index = 0; index < configuration.Size(); ++index) {
+      const auto &entry = configuration.Get(index);
+      if (!entry.HasKey("trigger")) {
+        continue;
+      }
+      trigger_overviews.push_back(BuildTriggerOverview(entry, context));
+    }
+    LogTriggerOverview(trigger_overviews, context);
+    return;
+  }
+
+  if (configuration.IsMap() && configuration.HasKey("action")) {
+    context.Log("Configured action graph:");
+    DescribeActionTree(configuration.Get("action"), context, 2);
+    return;
+  }
+
+  context.Log("Configuration did not contain triggers or actions that could be "
+              "summarised.");
+}
+
+} // namespace
 
 namespace examples {
 
@@ -126,35 +317,29 @@ std::string ExampleContext::DescribeOffset(SteadyClock::duration offset) const {
 
 std::string
 ExampleContext::DescribeDuration(SteadyClock::duration duration) const {
-  return DescribeDurationImpl(duration);
-}
-
-std::string
-ExampleContext::DescribeDurationImpl(SteadyClock::duration duration) const {
   return FormatDuration(duration);
 }
 
 ExampleActionBuilder::ExampleActionBuilder(ExampleContext &context)
     : action_builder_(action_graph::builder::
                           CreateGenericActionBuilderWithDefaultActions()),
-      context_(&context) {
+      context_(context) {
   using action_graph::builder::ConfigurationNode;
   using action_graph::builder::DecorateWithTimingMonitor;
 
   decorator_builder_.AddDecoratorFunction(
       "timing_monitor", [this](const ConfigurationNode &node,
                                action_graph::builder::ActionObject action) {
-        if (context_ != nullptr) {
-          std::ostringstream details;
-          details << "Attaching timing monitor to '" << action->name
-                  << "' with a duration limit of "
-                  << node.Get("duration_limit").AsString()
-                  << " and an expected period of "
-                  << node.Get("expected_period").AsString();
-          context_->Log(details.str());
-        }
+        auto &context = context_.get();
+        std::ostringstream details;
+        details << "Attaching timing monitor to '" << action->name
+                << "' with a duration limit of "
+                << node.Get("duration_limit").AsString()
+                << " and an expected period of "
+                << node.Get("expected_period").AsString();
+        context.Log(details.str());
         return DecorateWithTimingMonitor<SteadyClock>(node, std::move(action),
-                                                      *context_);
+                                                      context);
       });
 }
 
@@ -261,6 +446,7 @@ ExampleSession::ExampleSession(std::ostream &out, std::string title,
     context_.Log("  " + line);
   }
   context_.Log("");
+  LogConfigurationOverview(configuration_, context_);
 }
 
 ExampleSession::~ExampleSession() { context_.PrintSummary(title_); }
