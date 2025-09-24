@@ -13,6 +13,8 @@
 #include <thread>
 #include <vector>
 
+using namespace std::chrono_literals;
+
 using namespace std::chrono;
 using action_graph::Action;
 using action_graph::GlobalTimer;
@@ -67,7 +69,7 @@ protected:
     keep_running = true;
     stress_threads.clear();
     for (int i = 0; i < cpu_count - 1; ++i) {
-      stress_threads.push_back(SpawnThreadToBurnCpuCycles(keep_running));
+      SpawnThreadToBurnCpuCycles();
     }
   }
 
@@ -85,9 +87,8 @@ protected:
                          [this]() { monitored_action->Execute(); });
   }
 
-  static std::thread
-  SpawnThreadToBurnCpuCycles(const std::atomic<bool> &keep_running) {
-    return std::thread(
+  void SpawnThreadToBurnCpuCycles() {
+    stress_threads.emplace_back(
         [](const std::atomic<bool> &keep_running) {
           while (keep_running.load(std::memory_order_relaxed)) {
             BurnCpuCycles();

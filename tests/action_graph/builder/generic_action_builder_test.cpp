@@ -119,7 +119,7 @@ TEST(GenericActionBuilder, parallel_actions) {
                                    const ActionBuilder &) {
         return CreateCallbackActionFromYaml(
             node, [&messages, &messages_mutex](const std::string &msg) {
-              std::lock_guard guard(messages_mutex);
+              std::lock_guard<std::mutex> guard(messages_mutex);
               messages.push_back(msg);
             });
       });
