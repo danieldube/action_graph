@@ -228,4 +228,62 @@ CreateExampleActionBuilder(ExampleContext &context) {
   return builder;
 }
 
+ExampleSession::ExampleSession(std::ostream &out, std::string title,
+                               std::string configuration_yaml)
+    : title_(std::move(title)),
+      configuration_yaml_(std::move(configuration_yaml)), context_(out),
+      configuration_(
+          action_graph::yaml_cpp_configuration::Node::CreateFromString(
+              configuration_yaml_)),
+      builder_(CreateExampleActionBuilder(context_)) {
+  context_.Log(std::string{"\n=== "} + title_ + " ===");
+  context_.Log("Configuration YAML:");
+
+  std::istringstream configuration_stream(configuration_yaml_);
+  std::string line;
+  while (std::getline(configuration_stream, line)) {
+    context_.Log("  " + line);
+  }
+  context_.Log("");
+}
+
+ExampleSession::~ExampleSession() { context_.PrintSummary(title_); }
+
+ExampleContext &ExampleSession::Context() { return context_; }
+
+const ExampleContext &ExampleSession::Context() const { return context_; }
+
+const std::string &ExampleSession::Title() const { return title_; }
+
+const action_graph::yaml_cpp_configuration::Node &
+ExampleSession::Configuration() const {
+  return configuration_;
+}
+
+action_graph::builder::GenericActionBuilder &ExampleSession::Builder() {
+  return builder_;
+}
+
+const action_graph::builder::GenericActionBuilder &
+ExampleSession::Builder() const {
+  return builder_;
+}
+
+std::string DescribeCount(std::size_t count, const std::string &singular,
+                          const std::string &plural) {
+  std::ostringstream stream;
+  stream << count << ' ' << (count == 1 ? singular : plural);
+  return stream.str();
+}
+
+void ObserveForDuration(ExampleContext &context, Timer &timer,
+                        SteadyClock::duration duration,
+                        const std::string &reason) {
+  std::ostringstream message;
+  message << reason << " for " << context.DescribeDuration(duration) << "...";
+  context.Log(message.str());
+  std::this_thread::sleep_for(duration);
+  timer.WaitOneCycle();
+}
+
 } // namespace examples

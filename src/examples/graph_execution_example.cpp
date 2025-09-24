@@ -7,9 +7,6 @@
 
 #include "example_support.h"
 
-#include <action_graph/builder/builder.h>
-#include <yaml_cpp_configuration/yaml_node.h>
-
 #include <iostream>
 #include <memory>
 #include <string>
@@ -17,12 +14,9 @@
 namespace examples {
 
 void RunGraphExecutionExample() {
-  ExampleContext context(std::cout);
-  constexpr char kExampleTitle[] =
-      "Parallel and sequential graph executed once";
-  context.Log(std::string{"\n=== "} + kExampleTitle + " ===");
-
-  constexpr char kConfigurationText[] = R"yaml(
+  ExampleSession session(std::cout,
+                         "Parallel and sequential graph executed once",
+                         R"yaml(
 action:
   name: onboarding_flow
   type: sequential_actions
@@ -51,18 +45,13 @@ action:
         name: finalize
         type: log_message
         message: "Onboarding flow completed."
-)yaml";
+)yaml");
 
-  const auto configuration =
-      action_graph::yaml_cpp_configuration::Node::CreateFromString(
-          kConfigurationText);
-  auto builder = CreateExampleActionBuilder(context);
-
-  auto action = builder(configuration);
-  context.Log("Executing onboarding flow once to observe action order...");
+  auto action = session.Builder()(session.Configuration());
+  session.Context().Log(
+      "Executing onboarding flow once to observe action order...");
   action->Execute();
-
-  context.PrintSummary(kExampleTitle);
+  session.Context().Log("Onboarding flow execution finished.");
 }
 
 } // namespace examples

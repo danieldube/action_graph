@@ -8,8 +8,6 @@
 #include "example_support.h"
 
 #include <action_graph/builder/builder.h>
-#include <yaml_cpp_configuration/yaml_node.h>
-
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -18,12 +16,9 @@
 namespace examples {
 
 void RunThreeActionsTenMillisecondsExample() {
-  ExampleContext context(std::cout);
-  constexpr char kExampleTitle[] =
-      "Three actions triggered every 10 milliseconds";
-  context.Log(std::string{"\n=== "} + kExampleTitle + " ===");
-
-  constexpr char kConfigurationText[] = R"yaml(
+  ExampleSession session(std::cout,
+                         "Three actions triggered every 10 milliseconds",
+                         R"yaml(
 - trigger:
     name: alpha
     period: 10 milliseconds
@@ -45,25 +40,19 @@ void RunThreeActionsTenMillisecondsExample() {
       name: gamma_action
       type: log_message
       message: "Gamma fired."
-)yaml";
-
-  const auto configuration =
-      action_graph::yaml_cpp_configuration::Node::CreateFromString(
-          kConfigurationText);
-  auto builder = CreateExampleActionBuilder(context);
+)yaml");
 
   Timer timer;
-  const auto scheduled_actions =
-      action_graph::builder::BuildActionGraph(configuration, builder, timer);
-  (void)scheduled_actions;
+  const auto scheduled_actions = action_graph::builder::BuildActionGraph(
+      session.Configuration(), session.Builder(), timer);
+  const auto trigger_summary =
+      DescribeCount(scheduled_actions.size(), "action", "actions");
+  session.Context().Log("Timer configured " + trigger_summary +
+                        " that repeat every 10 milliseconds.");
 
   const auto observation_window = std::chrono::milliseconds{120};
-  context.Log("Collecting high-frequency events for " +
-              context.DescribeDuration(observation_window) + "...");
-  std::this_thread::sleep_for(observation_window);
-  timer.WaitOneCycle();
-
-  context.PrintSummary(kExampleTitle);
+  ObserveForDuration(session.Context(), timer, observation_window,
+                     "Collecting high-frequency events");
 }
 
 } // namespace examples

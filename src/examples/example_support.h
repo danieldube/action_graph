@@ -7,8 +7,10 @@
 
 #include <action_graph/builder/generic_action_builder.h>
 #include <action_graph/global_timer/global_timer.h>
+#include <yaml_cpp_configuration/yaml_node.h>
 
 #include <chrono>
+#include <cstddef>
 #include <iosfwd>
 #include <map>
 #include <mutex>
@@ -54,5 +56,39 @@ private:
 
 action_graph::builder::GenericActionBuilder
 CreateExampleActionBuilder(ExampleContext &context);
+
+class ExampleSession {
+public:
+  ExampleSession(std::ostream &out, std::string title,
+                 std::string configuration_yaml);
+  ~ExampleSession();
+
+  ExampleSession(const ExampleSession &) = delete;
+  ExampleSession &operator=(const ExampleSession &) = delete;
+  ExampleSession(ExampleSession &&) = delete;
+  ExampleSession &operator=(ExampleSession &&) = delete;
+
+  ExampleContext &Context();
+  const ExampleContext &Context() const;
+
+  const std::string &Title() const;
+  const action_graph::yaml_cpp_configuration::Node &Configuration() const;
+  action_graph::builder::GenericActionBuilder &Builder();
+  const action_graph::builder::GenericActionBuilder &Builder() const;
+
+private:
+  std::string title_;
+  std::string configuration_yaml_;
+  ExampleContext context_;
+  action_graph::yaml_cpp_configuration::Node configuration_;
+  action_graph::builder::GenericActionBuilder builder_;
+};
+
+std::string DescribeCount(std::size_t count, const std::string &singular,
+                          const std::string &plural);
+
+void ObserveForDuration(ExampleContext &context, Timer &timer,
+                        SteadyClock::duration duration,
+                        const std::string &reason);
 
 } // namespace examples

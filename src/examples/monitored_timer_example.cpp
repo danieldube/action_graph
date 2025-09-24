@@ -8,8 +8,6 @@
 #include "example_support.h"
 
 #include <action_graph/builder/builder.h>
-#include <yaml_cpp_configuration/yaml_node.h>
-
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -18,12 +16,9 @@
 namespace examples {
 
 void RunMonitoredTimerExample() {
-  ExampleContext context(std::cout);
-  constexpr char kExampleTitle[] =
-      "Timing monitored graph triggered by a timer";
-  context.Log(std::string{"\n=== "} + kExampleTitle + " ===");
-
-  constexpr char kConfigurationText[] = R"yaml(
+  ExampleSession session(std::cout,
+                         "Timing monitored graph triggered by a timer",
+                         R"yaml(
 - trigger:
     name: monitored_job
     period: 50 milliseconds
@@ -48,25 +43,21 @@ void RunMonitoredTimerExample() {
                 name: announce_completion
                 type: log_message
                 message: "Monitored sequence finished."
-)yaml";
-
-  const auto configuration =
-      action_graph::yaml_cpp_configuration::Node::CreateFromString(
-          kConfigurationText);
-  auto builder = CreateExampleActionBuilder(context);
+)yaml");
 
   Timer timer;
-  const auto scheduled_actions =
-      action_graph::builder::BuildActionGraph(configuration, builder, timer);
-  (void)scheduled_actions;
+  const auto scheduled_actions = action_graph::builder::BuildActionGraph(
+      session.Configuration(), session.Builder(), timer);
+  const auto trigger_summary = DescribeCount(
+      scheduled_actions.size(), "monitored action", "monitored actions");
+  session.Context().Log("Timer configured " + trigger_summary +
+                        " with a 30 ms budget and a 50 ms cadence.");
+  session.Context().Log(
+      "The monitor will report budget overruns and missed periods.");
 
   const auto observation_window = std::chrono::milliseconds{200};
-  context.Log("Running monitored sequence for approximately " +
-              context.DescribeDuration(observation_window) + "...");
-  std::this_thread::sleep_for(observation_window);
-  timer.WaitOneCycle();
-
-  context.PrintSummary(kExampleTitle);
+  ObserveForDuration(session.Context(), timer, observation_window,
+                     "Running monitored sequence");
 }
 
 } // namespace examples

@@ -19,10 +19,11 @@ cmake --build build --target action_graph_examples
 ./build/src/examples/action_graph_examples
 ```
 
-Each example prints its progress to the console, then emits a short summary
-highlighting how often every action ran and when it executed. The YAML strings
-shown below mirror the in-code configurations so they can be reused outside of
-C++ if desired.
+Each example first prints the YAML configuration that powers it, then streams
+its progress to the console and finally emits a short summary highlighting how
+often every action ran and when it executed. The YAML strings shown below
+mirror the in-code configurations so they can be reused outside of C++ if
+desired.
 
 ### One action triggered every second
 

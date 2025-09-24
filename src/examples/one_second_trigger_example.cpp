@@ -8,8 +8,6 @@
 #include "example_support.h"
 
 #include <action_graph/builder/builder.h>
-#include <yaml_cpp_configuration/yaml_node.h>
-
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -18,11 +16,8 @@
 namespace examples {
 
 void RunOneSecondTriggerExample() {
-  ExampleContext context(std::cout);
-  constexpr char kExampleTitle[] = "One action triggered every second";
-  context.Log(std::string{"\n=== "} + kExampleTitle + " ===");
-
-  constexpr char kConfigurationText[] = R"yaml(
+  ExampleSession session(std::cout, "One action triggered every second",
+                         R"yaml(
 - trigger:
     name: heartbeat
     period: 1 seconds
@@ -30,25 +25,19 @@ void RunOneSecondTriggerExample() {
       name: heartbeat_action
       type: log_message
       message: "Heartbeat action executed."
-)yaml";
-
-  const auto configuration =
-      action_graph::yaml_cpp_configuration::Node::CreateFromString(
-          kConfigurationText);
-  auto builder = CreateExampleActionBuilder(context);
+)yaml");
 
   Timer timer;
-  const auto scheduled_actions =
-      action_graph::builder::BuildActionGraph(configuration, builder, timer);
-  (void)scheduled_actions;
+  const auto scheduled_actions = action_graph::builder::BuildActionGraph(
+      session.Configuration(), session.Builder(), timer);
+  const auto trigger_summary =
+      DescribeCount(scheduled_actions.size(), "action", "actions");
+  session.Context().Log("Timer configured " + trigger_summary +
+                        " to fire once per second.");
 
   const auto observation_window = std::chrono::seconds{4};
-  context.Log("Allowing heartbeat to run for " +
-              context.DescribeDuration(observation_window) + "...");
-  std::this_thread::sleep_for(observation_window);
-  timer.WaitOneCycle();
-
-  context.PrintSummary(kExampleTitle);
+  ObserveForDuration(session.Context(), timer, observation_window,
+                     "Observing heartbeat");
 }
 
 } // namespace examples
