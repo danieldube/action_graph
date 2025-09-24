@@ -12,7 +12,7 @@ using action_graph::Action;
 using action_graph::ParallelActions;
 using action_graph::SingleAction;
 
-TEST(ParallelActionsPerformance, many_actions) {
+TEST(ParallelActionsStressTest, many_actions) {
   constexpr std::size_t kActionsCount = 1000;
   std::vector<std::unique_ptr<Action>> actions;
   actions.reserve(kActionsCount);
@@ -40,7 +40,7 @@ TEST(ParallelActionsPerformance, many_iterations) {
   EXPECT_EQ(counter, kIterationCount);
 }
 
-TEST(ParallelActionsPerformance, many_actions_many_iterations) {
+TEST(ParallelActionsStressTest, many_actions_many_iterations) {
   constexpr std::size_t kActionsCount = 100;
   constexpr std::size_t kIterationCount = 100;
 
