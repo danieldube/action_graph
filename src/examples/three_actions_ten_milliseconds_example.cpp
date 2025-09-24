@@ -10,7 +10,8 @@
 #include <chrono>
 #include <iostream>
 #include <string>
-#include <thread>
+
+using namespace std::chrono_literals;
 
 namespace examples {
 
@@ -43,13 +44,14 @@ void RunThreeActionsTenMillisecondsExample() {
 
   Timer timer;
   const auto scheduled_actions =
-      BuildScheduledActions(session.Configuration(), session.Builder(), timer);
+      BuildScheduledActions(session.Configuration(), session.ActionBuilder(),
+                            session.Decorator(), session.Context(), timer);
   const auto trigger_summary =
       DescribeCount(scheduled_actions.size(), "action", "actions");
   session.Context().Log("Timer configured " + trigger_summary +
                         " that repeat every 10 milliseconds.");
 
-  const auto observation_window = std::chrono::milliseconds{120};
+  const auto observation_window = 120ms;
   ObserveForDuration(session.Context(), timer, observation_window,
                      "Collecting high-frequency events");
 }

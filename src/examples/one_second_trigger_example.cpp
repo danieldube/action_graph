@@ -10,7 +10,8 @@
 #include <chrono>
 #include <iostream>
 #include <string>
-#include <thread>
+
+using namespace std::chrono_literals;
 
 namespace examples {
 
@@ -28,13 +29,14 @@ void RunOneSecondTriggerExample() {
 
   Timer timer;
   const auto scheduled_actions =
-      BuildScheduledActions(session.Configuration(), session.Builder(), timer);
+      BuildScheduledActions(session.Configuration(), session.ActionBuilder(),
+                            session.Decorator(), session.Context(), timer);
   const auto trigger_summary =
       DescribeCount(scheduled_actions.size(), "action", "actions");
   session.Context().Log("Timer configured " + trigger_summary +
                         " to fire once per second.");
 
-  const auto observation_window = std::chrono::seconds{4};
+  const auto observation_window = 4s;
   ObserveForDuration(session.Context(), timer, observation_window,
                      "Observing heartbeat");
 }

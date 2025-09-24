@@ -111,21 +111,21 @@ action:
 ### Timing monitored graph triggered by a timer
 
 The final example decorates a sequential action graph with a `TimingMonitor`.
-The decorator enforces a 30 ms budget and a 50 ms cadence, so any budget
-overruns or missed periods are reported through the shared log alongside the
-action summary.
+The decorator is declared alongside the action definition, enforcing a 30 ms
+budget and a 50 ms cadence so any budget overruns or missed periods are
+reported through the shared log alongside the action summary.
 
 ```yaml
 - trigger:
     name: monitored_job
     period: 50 milliseconds
-    decorate:
-      - type: timing_monitor
-        duration_limit: 30 milliseconds
-        expected_period: 50 milliseconds
     action:
       name: monitored_steps
       type: sequential_actions
+      decorate:
+        - type: timing_monitor
+          duration_limit: 30 milliseconds
+          expected_period: 50 milliseconds
       actions:
         - action:
             name: measured_step

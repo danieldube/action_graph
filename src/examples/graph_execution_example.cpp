@@ -47,7 +47,7 @@ action:
         message: "Onboarding flow completed."
 )yaml");
 
-  auto action = session.Builder().Build(session.Configuration());
+  auto action = session.BuildAction(session.Configuration());
   session.Context().Log(
       "Executing onboarding flow once to observe action order...");
   action->Execute();

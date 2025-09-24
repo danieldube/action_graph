@@ -319,59 +319,13 @@ ExampleContext::DescribeDuration(SteadyClock::duration duration) const {
   return FormatDuration(duration);
 }
 
-ExampleActionBuilder::ExampleActionBuilder(ExampleContext &context)
-    : action_builder_(action_graph::builder::
-                          CreateGenericActionBuilderWithDefaultActions()),
-      context_(context) {
-  using action_graph::builder::ConfigurationNode;
-  using action_graph::builder::DecorateWithTimingMonitor;
-
-  decorator_builder_.AddDecoratorFunction(
-      "timing_monitor", [this](const ConfigurationNode &node,
-                               action_graph::builder::ActionObject action) {
-        auto &context = context_.get();
-        std::ostringstream details;
-        details << "Attaching timing monitor to '" << action->name
-                << "' with a duration limit of "
-                << node.Get("duration_limit").AsString()
-                << " and an expected period of "
-                << node.Get("expected_period").AsString();
-        context.Log(details.str());
-        return DecorateWithTimingMonitor<SteadyClock>(node, std::move(action),
-                                                      context);
-      });
-}
-
-action_graph::builder::ActionObject ExampleActionBuilder::Build(
-    const action_graph::builder::ConfigurationNode &node) const {
-  auto action = action_builder_(node);
-  return decorator_builder_(node, std::move(action));
-}
-
-void ExampleActionBuilder::AddBuilderFunction(
-    const std::string &action_type,
-    action_graph::builder::BuilderFunction builder_function) {
-  action_builder_.AddBuilderFunction(action_type, std::move(builder_function));
-}
-
-void ExampleActionBuilder::AddDecoratorFunction(
-    const std::string &decorator_type,
-    action_graph::builder::DecorateFunction decorator_function) {
-  decorator_builder_.AddDecoratorFunction(decorator_type,
-                                          std::move(decorator_function));
-}
-
-ExampleContext &ExampleActionBuilder::Context() { return context_.get(); }
-
-const ExampleContext &ExampleActionBuilder::Context() const {
-  return context_.get();
-}
-
-ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context) {
+action_graph::builder::GenericActionBuilder
+CreateExampleActionBuilder(ExampleContext &context) {
   using action_graph::builder::ActionBuilder;
   using action_graph::builder::ConfigurationNode;
 
-  ExampleActionBuilder builder(context);
+  auto builder =
+      action_graph::builder::CreateGenericActionBuilderWithDefaultActions();
 
   builder.AddBuilderFunction(
       "log_message",
@@ -427,9 +381,48 @@ ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context) {
   return builder;
 }
 
+action_graph::builder::GenericActionDecorator
+CreateExampleActionDecorator(ExampleContext &context) {
+  using action_graph::builder::ConfigurationNode;
+  using action_graph::builder::DecorateWithTimingMonitor;
+
+  action_graph::builder::GenericActionDecorator decorator;
+
+  decorator.AddDecoratorFunction(
+      "timing_monitor", [&context](const ConfigurationNode &node,
+                                   action_graph::builder::ActionObject action) {
+        std::ostringstream details;
+        details << "Attaching timing monitor to '" << action->name
+                << "' with a duration limit of "
+                << node.Get("duration_limit").AsString()
+                << " and an expected period of "
+                << node.Get("expected_period").AsString();
+        context.Log(details.str());
+        return DecorateWithTimingMonitor<SteadyClock>(node, std::move(action),
+                                                      context);
+      });
+
+  return decorator;
+}
+
+action_graph::builder::ActionObject BuildExampleAction(
+    const action_graph::builder::ConfigurationNode &node,
+    const action_graph::builder::GenericActionBuilder &builder,
+    const action_graph::builder::GenericActionDecorator &decorator) {
+  auto action = builder(node);
+  action = decorator(node, std::move(action));
+  if (node.HasKey("action")) {
+    const auto &inner_action = node.Get("action");
+    action = decorator(inner_action, std::move(action));
+  }
+  return action;
+}
+
 std::vector<action_graph::builder::ActionObject> BuildScheduledActions(
     const action_graph::yaml_cpp_configuration::Node &configuration,
-    ExampleActionBuilder &builder, Timer &timer) {
+    const action_graph::builder::GenericActionBuilder &builder,
+    const action_graph::builder::GenericActionDecorator &decorator,
+    ExampleContext &context, Timer &timer) {
   using action_graph::builder::ConfigurationError;
 
   std::vector<action_graph::builder::ActionObject> created_actions;
@@ -449,7 +442,7 @@ std::vector<action_graph::builder::ActionObject> BuildScheduledActions(
     const auto casted_trigger_period =
         std::chrono::duration_cast<SteadyClock::duration>(trigger_period);
 
-    auto action = builder.Build(trigger);
+    auto action = BuildExampleAction(trigger, builder, decorator);
     auto *action_ptr = action.get();
 
     timer.SetTriggerTime(casted_trigger_period,
@@ -458,7 +451,7 @@ std::vector<action_graph::builder::ActionObject> BuildScheduledActions(
     std::ostringstream overview;
     overview << "Scheduled trigger '" << trigger_name << "' every "
              << trigger_period_string << ".";
-    builder.Context().Log(overview.str());
+    context.Log(overview.str());
 
     created_actions.push_back(std::move(action));
   }
@@ -472,7 +465,8 @@ ExampleSession::ExampleSession(std::ostream &out, std::string title,
       configuration_(
           action_graph::yaml_cpp_configuration::Node::CreateFromString(
               configuration_yaml_)),
-      builder_(CreateExampleActionBuilder(context_)) {
+      action_builder_(CreateExampleActionBuilder(context_)),
+      decorator_builder_(CreateExampleActionDecorator(context_)) {
   context_.Log(std::string{"\n=== "} + title_ + " ===");
   context_.Log("Configuration YAML:");
 
@@ -498,9 +492,28 @@ ExampleSession::Configuration() const {
   return configuration_;
 }
 
-ExampleActionBuilder &ExampleSession::Builder() { return builder_; }
+action_graph::builder::GenericActionBuilder &ExampleSession::ActionBuilder() {
+  return action_builder_;
+}
 
-const ExampleActionBuilder &ExampleSession::Builder() const { return builder_; }
+const action_graph::builder::GenericActionBuilder &
+ExampleSession::ActionBuilder() const {
+  return action_builder_;
+}
+
+action_graph::builder::GenericActionDecorator &ExampleSession::Decorator() {
+  return decorator_builder_;
+}
+
+const action_graph::builder::GenericActionDecorator &
+ExampleSession::Decorator() const {
+  return decorator_builder_;
+}
+
+action_graph::builder::ActionObject ExampleSession::BuildAction(
+    const action_graph::builder::ConfigurationNode &node) const {
+  return BuildExampleAction(node, ActionBuilder(), Decorator());
+}
 
 std::string DescribeCount(std::size_t count, const std::string &singular,
                           const std::string &plural) {

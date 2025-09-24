@@ -13,7 +13,6 @@
 
 #include <chrono>
 #include <cstddef>
-#include <functional>
 #include <iosfwd>
 #include <map>
 #include <mutex>
@@ -58,39 +57,22 @@ private:
   std::vector<std::string> action_order_;
 };
 
-class ExampleActionBuilder {
-public:
-  explicit ExampleActionBuilder(ExampleContext &context);
-  ExampleActionBuilder(const ExampleActionBuilder &) = delete;
-  ExampleActionBuilder &operator=(const ExampleActionBuilder &) = delete;
-  ExampleActionBuilder(ExampleActionBuilder &&) noexcept = default;
-  ExampleActionBuilder &operator=(ExampleActionBuilder &&) noexcept = default;
+action_graph::builder::GenericActionBuilder
+CreateExampleActionBuilder(ExampleContext &context);
 
-  action_graph::builder::ActionObject
-  Build(const action_graph::builder::ConfigurationNode &node) const;
+action_graph::builder::GenericActionDecorator
+CreateExampleActionDecorator(ExampleContext &context);
 
-  void
-  AddBuilderFunction(const std::string &action_type,
-                     action_graph::builder::BuilderFunction builder_function);
-
-  void AddDecoratorFunction(
-      const std::string &decorator_type,
-      action_graph::builder::DecorateFunction decorator_function);
-
-  ExampleContext &Context();
-  const ExampleContext &Context() const;
-
-private:
-  action_graph::builder::GenericActionBuilder action_builder_;
-  action_graph::builder::GenericActionDecorator decorator_builder_;
-  std::reference_wrapper<ExampleContext> context_;
-};
-
-ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context);
+action_graph::builder::ActionObject BuildExampleAction(
+    const action_graph::builder::ConfigurationNode &node,
+    const action_graph::builder::GenericActionBuilder &builder,
+    const action_graph::builder::GenericActionDecorator &decorator);
 
 std::vector<action_graph::builder::ActionObject> BuildScheduledActions(
     const action_graph::yaml_cpp_configuration::Node &configuration,
-    ExampleActionBuilder &builder, Timer &timer);
+    const action_graph::builder::GenericActionBuilder &builder,
+    const action_graph::builder::GenericActionDecorator &decorator,
+    ExampleContext &context, Timer &timer);
 
 class ExampleSession {
 public:
@@ -108,15 +90,20 @@ public:
 
   const std::string &Title() const;
   const action_graph::yaml_cpp_configuration::Node &Configuration() const;
-  ExampleActionBuilder &Builder();
-  const ExampleActionBuilder &Builder() const;
+  action_graph::builder::GenericActionBuilder &ActionBuilder();
+  const action_graph::builder::GenericActionBuilder &ActionBuilder() const;
+  action_graph::builder::GenericActionDecorator &Decorator();
+  const action_graph::builder::GenericActionDecorator &Decorator() const;
+  action_graph::builder::ActionObject
+  BuildAction(const action_graph::builder::ConfigurationNode &node) const;
 
 private:
   std::string title_;
   std::string configuration_yaml_;
   ExampleContext context_;
   action_graph::yaml_cpp_configuration::Node configuration_;
-  ExampleActionBuilder builder_;
+  action_graph::builder::GenericActionBuilder action_builder_;
+  action_graph::builder::GenericActionDecorator decorator_builder_;
 };
 
 std::string DescribeCount(std::size_t count, const std::string &singular,

@@ -10,7 +10,8 @@
 #include <chrono>
 #include <iostream>
 #include <string>
-#include <thread>
+
+using namespace std::chrono_literals;
 
 namespace examples {
 
@@ -21,13 +22,13 @@ void RunMonitoredTimerExample() {
 - trigger:
     name: monitored_job
     period: 50 milliseconds
-    decorate:
-      - type: timing_monitor
-        duration_limit: 30 milliseconds
-        expected_period: 50 milliseconds
     action:
       name: monitored_steps
       type: sequential_actions
+      decorate:
+        - type: timing_monitor
+          duration_limit: 30 milliseconds
+          expected_period: 50 milliseconds
       actions:
         - action:
             name: measured_step
@@ -41,7 +42,8 @@ void RunMonitoredTimerExample() {
 
   Timer timer;
   const auto scheduled_actions =
-      BuildScheduledActions(session.Configuration(), session.Builder(), timer);
+      BuildScheduledActions(session.Configuration(), session.ActionBuilder(),
+                            session.Decorator(), session.Context(), timer);
   const auto trigger_summary = DescribeCount(
       scheduled_actions.size(), "monitored trigger", "monitored triggers");
   session.Context().Log("Timer configured " + trigger_summary +
@@ -49,7 +51,7 @@ void RunMonitoredTimerExample() {
   session.Context().Log(
       "The timing monitor will report budget overruns and missed periods.");
 
-  const auto observation_window = std::chrono::milliseconds{200};
+  const auto observation_window = 200ms;
   ObserveForDuration(session.Context(), timer, observation_window,
                      "Running monitored sequence");
 }
