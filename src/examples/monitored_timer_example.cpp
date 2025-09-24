@@ -22,38 +22,33 @@ void RunMonitoredTimerExample() {
 - trigger:
     name: monitored_job
     period: 50 milliseconds
-    action:
-      name: monitored_sequence
-      type: monitored_action
-      monitor:
+    decorate:
+      - type: timing_monitor
         duration_limit: 30 milliseconds
-        period: 50 milliseconds
-        on_duration_exceeded: "Execution exceeded the 30 ms budget."
-        on_trigger_miss: "Trigger period was missed."
-      action:
-        action:
-          name: monitored_steps
-          type: sequential_actions
-          actions:
-            - action:
-                name: measured_step
-                type: wait
-                duration: 60 milliseconds
-            - action:
-                name: announce_completion
-                type: log_message
-                message: "Monitored sequence finished."
+        expected_period: 50 milliseconds
+    action:
+      name: monitored_steps
+      type: sequential_actions
+      actions:
+        - action:
+            name: measured_step
+            type: wait
+            duration: 60 milliseconds
+        - action:
+            name: announce_completion
+            type: log_message
+            message: "Monitored sequence finished."
 )yaml");
 
   Timer timer;
   const auto scheduled_actions = action_graph::builder::BuildActionGraph(
       session.Configuration(), session.Builder(), timer);
   const auto trigger_summary = DescribeCount(
-      scheduled_actions.size(), "monitored action", "monitored actions");
+      scheduled_actions.size(), "monitored trigger", "monitored triggers");
   session.Context().Log("Timer configured " + trigger_summary +
                         " with a 30 ms budget and a 50 ms cadence.");
   session.Context().Log(
-      "The monitor will report budget overruns and missed periods.");
+      "The timing monitor will report budget overruns and missed periods.");
 
   const auto observation_window = std::chrono::milliseconds{200};
   ObserveForDuration(session.Context(), timer, observation_window,

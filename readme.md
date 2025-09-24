@@ -110,34 +110,29 @@ action:
 
 ### Timing monitored graph triggered by a timer
 
-The final example wraps a sequential action graph in a `TimingMonitor`. The
-monitor reports when execution exceeds the budget or when a trigger misses its
-period, so the output demonstrates the monitoring callbacks alongside the
+The final example decorates a sequential action graph with a `TimingMonitor`.
+The decorator enforces a 30 ms budget and a 50 ms cadence, so any budget
+overruns or missed periods are reported through the shared log alongside the
 action summary.
 
 ```yaml
 - trigger:
     name: monitored_job
     period: 50 milliseconds
-    action:
-      name: monitored_sequence
-      type: monitored_action
-      monitor:
+    decorate:
+      - type: timing_monitor
         duration_limit: 30 milliseconds
-        period: 50 milliseconds
-        on_duration_exceeded: "Execution exceeded the 30 ms budget."
-        on_trigger_miss: "Trigger period was missed."
-      action:
-        action:
-          name: monitored_steps
-          type: sequential_actions
-          actions:
-            - action:
-                name: measured_step
-                type: wait
-                duration: 60 milliseconds
-            - action:
-                name: announce_completion
-                type: log_message
-                message: "Monitored sequence finished."
+        expected_period: 50 milliseconds
+    action:
+      name: monitored_steps
+      type: sequential_actions
+      actions:
+        - action:
+            name: measured_step
+            type: wait
+            duration: 60 milliseconds
+        - action:
+            name: announce_completion
+            type: log_message
+            message: "Monitored sequence finished."
 ```

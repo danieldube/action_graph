@@ -6,7 +6,9 @@
 #pragma once
 
 #include <action_graph/builder/generic_action_builder.h>
+#include <action_graph/builder/generic_action_decorator.h>
 #include <action_graph/global_timer/global_timer.h>
+#include <action_graph/log.h>
 #include <yaml_cpp_configuration/yaml_node.h>
 
 #include <chrono>
@@ -22,7 +24,7 @@ namespace examples {
 using SteadyClock = std::chrono::steady_clock;
 using Timer = action_graph::GlobalTimer<SteadyClock>;
 
-class ExampleContext {
+class ExampleContext : public action_graph::Log {
 public:
   explicit ExampleContext(std::ostream &out);
 
@@ -37,6 +39,9 @@ public:
         std::chrono::duration_cast<SteadyClock::duration>(duration));
   }
   std::string DescribeDuration(SteadyClock::duration duration) const;
+
+  void LogMessage(const std::string &message) override;
+  void LogError(const std::string &message) override;
 
 private:
   struct ActionStats {
@@ -54,8 +59,30 @@ private:
   std::vector<std::string> action_order_;
 };
 
-action_graph::builder::GenericActionBuilder
-CreateExampleActionBuilder(ExampleContext &context);
+class ExampleActionBuilder final : public action_graph::builder::ActionBuilder {
+public:
+  explicit ExampleActionBuilder(ExampleContext &context);
+  ExampleActionBuilder(const ExampleActionBuilder &) = delete;
+  ExampleActionBuilder &operator=(const ExampleActionBuilder &) = delete;
+  ExampleActionBuilder(ExampleActionBuilder &&) noexcept = default;
+  ExampleActionBuilder &operator=(ExampleActionBuilder &&) noexcept = default;
+
+  action_graph::builder::ActionObject operator()(
+      const action_graph::builder::ConfigurationNode &node) const override;
+
+  action_graph::builder::GenericActionBuilder &Actions();
+  const action_graph::builder::GenericActionBuilder &Actions() const;
+
+  action_graph::builder::GenericActionDecorator &Decorators();
+  const action_graph::builder::GenericActionDecorator &Decorators() const;
+
+private:
+  action_graph::builder::GenericActionBuilder action_builder_;
+  action_graph::builder::GenericActionDecorator decorator_builder_;
+  ExampleContext *context_;
+};
+
+ExampleActionBuilder CreateExampleActionBuilder(ExampleContext &context);
 
 class ExampleSession {
 public:
@@ -73,15 +100,15 @@ public:
 
   const std::string &Title() const;
   const action_graph::yaml_cpp_configuration::Node &Configuration() const;
-  action_graph::builder::GenericActionBuilder &Builder();
-  const action_graph::builder::GenericActionBuilder &Builder() const;
+  ExampleActionBuilder &Builder();
+  const ExampleActionBuilder &Builder() const;
 
 private:
   std::string title_;
   std::string configuration_yaml_;
   ExampleContext context_;
   action_graph::yaml_cpp_configuration::Node configuration_;
-  action_graph::builder::GenericActionBuilder builder_;
+  ExampleActionBuilder builder_;
 };
 
 std::string DescribeCount(std::size_t count, const std::string &singular,
