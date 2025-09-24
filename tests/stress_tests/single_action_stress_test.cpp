@@ -41,18 +41,6 @@ public:
     ++exec_count_;
   }
 
-  static void
-  SpawnThreadToBurnCpuCycles(const std::atomic<bool> &keep_running) {
-    std::thread(
-        [](const std::atomic<bool> &keep_running) {
-          while (keep_running.load(std::memory_order_relaxed)) {
-            BurnCpuCycles();
-          }
-        },
-        std::ref(keep_running))
-        .detach();
-  }
-
 private:
   std::atomic<int> &exec_count_;
   std::chrono::milliseconds duration_;
@@ -79,13 +67,7 @@ protected:
     keep_running = true;
     stress_threads.clear();
     for (int i = 0; i < cpu_count - 1; ++i) {
-      stress_threads.emplace_back([this, duration]() {
-        const auto start = std::chrono::steady_clock::now();
-        while (keep_running.load(std::memory_order_relaxed) &&
-               std::chrono::steady_clock::now() - start < duration) {
-          BurnCpuCycles();
-        }
-      });
+      SpawnThreadToBurnCpuCycles(keep_running);
     }
   }
 
@@ -101,6 +83,18 @@ protected:
             on_trigger_miss);
     timer.SetTriggerTime(kActionPeriod,
                          [this]() { monitored_action->Execute(); });
+  }
+
+  static void
+  SpawnThreadToBurnCpuCycles(const std::atomic<bool> &keep_running) {
+    std::thread(
+        [](const std::atomic<bool> &keep_running) {
+          while (keep_running.load(std::memory_order_relaxed)) {
+            BurnCpuCycles();
+          }
+        },
+        std::ref(keep_running))
+        .detach();
   }
 
   void TearDown() override {
