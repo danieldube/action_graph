@@ -6,9 +6,9 @@
 #include "example_runners.h"
 
 int main() {
-  examples::RunOneSecondTriggerExample();
-  examples::RunThreeActionsTenMillisecondsExample();
-  examples::RunGraphExecutionExample();
-  examples::RunMonitoredTimerExample();
+  RunOneSecondTriggerExample();
+  RunThreeActionsTenMillisecondsExample();
+  RunGraphExecutionExample();
+  RunMonitoredTimerExample();
   return 0;
 }

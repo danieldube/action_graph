@@ -4,57 +4,36 @@
 // License. See the LICENSE file in the root directory for full license text.
 
 #include "example_runners.h"
+#include "example_timer_runner.h"
 
-#include "example_configurations.h"
-#include "example_support.h"
-
-#include <chrono>
-#include <iostream>
-#include <string>
-#include <vector>
-
-using namespace std::chrono_literals;
+#include <string_view>
 
 namespace {
-
-constexpr std::chrono::milliseconds kBurstObservationWindow{120};
-
-std::vector<action_graph::builder::ActionObject>
-ScheduleHighFrequencyTriggers(examples::ExampleSession &session,
-                              examples::Timer &timer) {
-  auto actions = examples::BuildScheduledActions(
-      session.Configuration(), session.ActionBuilder(), session.Decorator(),
-      session.Context(), timer);
-  return actions;
-}
-
-void LogHighFrequencySummary(examples::ExampleSession &session,
-                             std::size_t action_count) {
-  const auto summary =
-      examples::DescribeCount(action_count, "action", "actions");
-  session.Context().Log("Timer configured " + summary +
-                        " that repeat every 10 milliseconds.");
-}
-
-void ObserveHighFrequency(examples::ExampleSession &session,
-                          examples::Timer &timer) {
-  examples::ObserveForDuration(session.Context(), timer,
-                               kBurstObservationWindow,
-                               "Collecting high-frequency events");
-}
-
+constexpr std::string_view kTitle = "Three actions every ten milliseconds";
+constexpr std::string_view kConfiguration = R"(
+- trigger:
+    name: telemetry_burst
+    period: 10 milliseconds
+    action:
+      name: fan_out_samples
+      type: parallel_actions
+      actions:
+        - action:
+            name: log_left_sensor
+            type: log_message
+            message: "Left sensor captured a sample."
+        - action:
+            name: log_right_sensor
+            type: log_message
+            message: "Right sensor captured a sample."
+        - action:
+            name: log_central_unit
+            type: log_message
+            message: "Central unit correlated the readings."
+)";
+constexpr int kCycles = 10;
 } // namespace
 
-namespace examples {
-
 void RunThreeActionsTenMillisecondsExample() {
-  ExampleSession session(std::cout,
-                         "Three actions triggered every 10 milliseconds",
-                         configurations::ThreeActionsTenMillisecondsYaml());
-  Timer timer;
-  auto actions = ScheduleHighFrequencyTriggers(session, timer);
-  LogHighFrequencySummary(session, actions.size());
-  ObserveHighFrequency(session, timer);
+  RunTimedExample(kTitle, kConfiguration, kCycles);
 }
-
-} // namespace examples
