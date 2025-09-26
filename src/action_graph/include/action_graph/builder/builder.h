@@ -15,6 +15,8 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <stdexcept>
+#include <vector>
 
 namespace action_graph {
 namespace builder {

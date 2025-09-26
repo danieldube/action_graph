@@ -8,6 +8,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 
 // NOLINTBEGIN(*identifier-naming)
 class TestClock {
@@ -19,16 +20,18 @@ public:
 
   static constexpr bool is_steady = true;
 
-  static time_point now() noexcept { return time_point(current_time_.load()); }
-
-  static void advance_time(const duration &delta) noexcept {
-    current_time_ = current_time_.load() + delta;
+  static time_point now() noexcept {
+    return time_point(duration{current_time_.load()});
   }
 
-  static void reset() noexcept { current_time_ = duration{0}; }
+  static void advance_time(const duration &delta) noexcept {
+    current_time_.fetch_add(delta.count());
+  }
+
+  static void reset() noexcept { current_time_.store(0); }
 
 private:
-  static std::atomic<duration> current_time_;
+  static std::atomic<rep> current_time_;
 };
 // NOLINTEND(*identifier-naming)
 

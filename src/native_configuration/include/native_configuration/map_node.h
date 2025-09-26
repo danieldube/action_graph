@@ -7,25 +7,25 @@
 #define ACTION_GRAPH_SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_MAP_NODE_H_
 
 #include <action_graph/builder/configuration_node.h>
+#include <cstddef>
+#include <iterator>
 #include <map>
+#include <memory>
 #include <sstream>
+#include <type_traits>
+#include <utility>
 
 namespace action_graph {
 namespace native_configuration {
-class MapNode : public builder::ConfigurationNode {
+class MapNode final : public builder::ConfigurationNode {
 public:
   using Entry = std::pair<std::string, ConfigurationNode::Pointer>;
 
   explicit MapNode(std::map<std::string, ConfigurationNode::Pointer> entries)
       : entries_(std::move(entries)) {}
 
-  template <typename... Pairs> explicit MapNode(Pairs &&...pairs) {
-    (entries_.emplace(
-         std::forward<Pairs>(pairs).first,
-         std::make_unique<
-             std::decay_t<decltype(std::forward<Pairs>(pairs).second)>>(
-             std::forward<Pairs>(pairs).second)),
-     ...);
+  template <typename... Pairs> explicit MapNode(Pairs... pairs) {
+    AddEntries(std::move(pairs)...);
   }
 
   bool IsScalar() const noexcept override { return false; }
@@ -53,9 +53,7 @@ public:
                                     *this);
   }
 
-  std::size_t Size() const noexcept override {
-    return 0;
-  } // Implement size logic
+  std::size_t Size() const noexcept override { return 0; }
   std::string AsString() const noexcept override {
     std::stringstream stream;
     for (const auto &entry : entries_) {
@@ -65,6 +63,16 @@ public:
   }
 
 private:
+  static void AddEntries() {}
+
+  template <typename Pair, typename... Remaining>
+  void AddEntries(Pair pair, Remaining... remaining) {
+    using NodeType = typename std::decay<decltype(pair.second)>::type;
+    entries_.emplace(std::move(pair.first),
+                     std::make_unique<NodeType>(std::move(pair.second)));
+    AddEntries(std::move(remaining)...);
+  }
+
   std::map<std::string, ConfigurationNode::Pointer> entries_;
 };
 

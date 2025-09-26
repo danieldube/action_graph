@@ -17,4 +17,7 @@ target_sources(
             include/file_log/file_log.h)
 
 target_link_libraries(file_log INTERFACE action_graph::action_graph)
+
+target_compile_features(file_log INTERFACE cxx_std_14)
+set_target_properties(file_log PROPERTIES CXX_EXTENSIONS OFF)
 add_library(action_graph::file_log ALIAS file_log)

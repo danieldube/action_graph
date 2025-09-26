@@ -9,6 +9,7 @@
 #include <action_graph/action.h>
 #include <future>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace action_graph {
@@ -17,7 +18,7 @@ public:
   template <class... Actions>
   ParallelActions(std::string name, std::unique_ptr<Actions>... actions)
       : Action(std::move(name)) {
-    (sequence_.emplace_back(std::move(actions)), ...);
+    AppendActions(std::move(actions)...);
   }
 
   ParallelActions(std::string name,
@@ -39,6 +40,14 @@ public:
   }
 
 private:
+  static void AppendActions() {}
+
+  template <typename ActionPtr, typename... Remaining>
+  void AppendActions(ActionPtr action, Remaining... remaining) {
+    sequence_.emplace_back(std::move(action));
+    AppendActions(std::move(remaining)...);
+  }
+
   std::vector<std::unique_ptr<Action>> sequence_;
 };
 } // namespace action_graph
