@@ -7,6 +7,7 @@
 #include <yaml_cpp_configuration/yaml_node.h>
 
 #include <chrono>
+#include <memory>
 
 namespace action_graph_examples {
 
@@ -28,11 +29,12 @@ void RunSingleSecondTriggerExample(ConsoleLog &log) {
 
   auto configuration = Node::CreateFromString(kYaml);
   auto builder = CreateLoggingActionBuilder(log);
-  GlobalTimer<TimerClock> timer{};
-  const auto actions = BuildActionGraph(configuration, builder, timer);
+  auto timer = std::make_unique<GlobalTimer<TimerClock>>();
+  const auto actions = BuildActionGraph(configuration, builder, *timer);
   log.LogMessage("Registered " + std::to_string(actions.size()) +
                  " periodic action.");
-  RunTimerFor(timer, std::chrono::seconds(3));
+  RunTimerFor(*timer, std::chrono::seconds(3));
+  timer.reset();
 }
 
 } // namespace action_graph_examples
