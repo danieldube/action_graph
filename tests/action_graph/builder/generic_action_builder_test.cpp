@@ -114,8 +114,7 @@ namespace {
 class NameDecorator final : public action_graph::decorators::DecoratedAction {
 public:
   NameDecorator(action_graph::builder::ActionObject action,
-                std::string decorator_name,
-                std::ostream &output_stream)
+                std::string decorator_name, std::ostream &output_stream)
       : DecoratedAction(std::move(action)),
         decorator_name_(std::move(decorator_name)),
         output_stream_(output_stream) {}
@@ -187,9 +186,8 @@ TEST(GenericActionBuilder, decorated_action) {
   std::stringstream output;
   GenericActionDecorator decorator;
   decorator.AddDecoratorFunction(
-      "NameDecorator",
-      [&output](const ConfigurationNode &node,
-                action_graph::builder::ActionObject action) {
+      "NameDecorator", [&output](const ConfigurationNode &node,
+                                 action_graph::builder::ActionObject action) {
         auto decorator_name = node.Get("name").AsString();
         return std::make_unique<NameDecorator>(std::move(action),
                                                decorator_name, output);
@@ -202,7 +200,7 @@ TEST(GenericActionBuilder, decorated_action) {
         return CreateCallbackActionFromYaml(
             node, [&output](const std::string &msg) { output << msg; });
       });
-  action_builder.SetActionDecorator(decorator);
+  action_builder.SetActionDecorator(std::move(decorator));
 
   auto action = action_builder(kDecoratedCallbackAction);
   action->Execute();

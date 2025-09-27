@@ -19,15 +19,15 @@ using BuilderFunctions = std::map<std::string, BuilderFunction>;
 
 class GenericActionBuilder final : public ActionBuilder {
 public:
-  GenericActionBuilder();
-  void SetActionDecorator(const GenericActionDecorator &decorator);
+  GenericActionBuilder() = default;
+  void SetActionDecorator(GenericActionDecorator decorator);
   ActionObject operator()(const ConfigurationNode &node) const override;
   void AddBuilderFunction(const std::string &action_type,
                           BuilderFunction builder_function);
 
 private:
   BuilderFunctions builder_functions_;
-  std::reference_wrapper<const GenericActionDecorator> action_decorator_;
+  GenericActionDecorator action_decorator_{};
 };
 
 std::vector<ActionObject> BuildActions(const ConfigurationNode &node,

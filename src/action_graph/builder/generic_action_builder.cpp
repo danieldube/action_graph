@@ -13,19 +13,7 @@
 namespace action_graph {
 namespace builder {
 
-namespace {
-
-const GenericActionDecorator &IdentityActionDecorator() {
-  static const GenericActionDecorator decorator{};
-  return decorator;
-}
-
-} // namespace
-
 using ::action_graph::Action;
-
-GenericActionBuilder::GenericActionBuilder()
-    : action_decorator_(IdentityActionDecorator()) {}
 
 std::vector<ActionObject> BuildActions(const ConfigurationNode &node,
                                        const ActionBuilder &action_builder) {
@@ -43,11 +31,12 @@ std::vector<ActionObject> BuildActions(const ConfigurationNode &node,
 }
 
 void GenericActionBuilder::SetActionDecorator(
-    const GenericActionDecorator &decorator) {
-  action_decorator_ = decorator;
+    GenericActionDecorator decorator) {
+  action_decorator_ = std::move(decorator);
 }
 
-ActionObject GenericActionBuilder::operator()(const ConfigurationNode &node) const {
+ActionObject
+GenericActionBuilder::operator()(const ConfigurationNode &node) const {
   if (!node.HasKey("action")) {
     throw ConfigurationError(
         "The ActionBuilder can just be called on action nodes.", node);
@@ -64,7 +53,7 @@ ActionObject GenericActionBuilder::operator()(const ConfigurationNode &node) con
   }
   const auto &builder_function = builder->second;
   auto built_action = builder_function(action, *this);
-  return action_decorator_.get()(action, std::move(built_action));
+  return action_decorator_(action, std::move(built_action));
 }
 
 void GenericActionBuilder::AddBuilderFunction(
