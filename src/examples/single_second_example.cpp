@@ -10,6 +10,10 @@
 
 namespace action_graph_examples {
 
+using action_graph::builder::BuildActionGraph;
+using action_graph::yaml_cpp_configuration::Node;
+using action_graph::GlobalTimer;
+
 void RunSingleSecondTriggerExample(ConsoleLog &log) {
   log.LogMessage("=== Example: one action triggered every second ===");
   const std::string kYaml = R"(
@@ -22,12 +26,10 @@ void RunSingleSecondTriggerExample(ConsoleLog &log) {
       message: "tick"
 )";
 
-  auto configuration =
-      action_graph::yaml_cpp_configuration::Node::CreateFromString(kYaml);
+  auto configuration = Node::CreateFromString(kYaml);
   auto builder = CreateLoggingActionBuilder(log);
-  action_graph::GlobalTimer<TimerClock> timer{};
-  const auto actions =
-      action_graph::builder::BuildActionGraph(configuration, builder, timer);
+  GlobalTimer<TimerClock> timer{};
+  const auto actions = BuildActionGraph(configuration, builder, timer);
   log.LogMessage("Registered " + std::to_string(actions.size()) +
                  " periodic action.");
   RunTimerFor(timer, std::chrono::seconds(3));

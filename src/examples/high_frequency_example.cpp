@@ -10,6 +10,10 @@
 
 namespace action_graph_examples {
 
+using action_graph::builder::BuildActionGraph;
+using action_graph::yaml_cpp_configuration::Node;
+using action_graph::GlobalTimer;
+
 void RunHighFrequencyTriggerExample(ConsoleLog &log) {
   log.LogMessage(
       "=== Example: three actions triggered every 10 milliseconds ===");
@@ -37,12 +41,10 @@ void RunHighFrequencyTriggerExample(ConsoleLog &log) {
       message: "sensor three sampled"
 )";
 
-  auto configuration =
-      action_graph::yaml_cpp_configuration::Node::CreateFromString(kYaml);
+  auto configuration = Node::CreateFromString(kYaml);
   auto builder = CreateLoggingActionBuilder(log);
-  action_graph::GlobalTimer<TimerClock> timer{};
-  const auto actions =
-      action_graph::builder::BuildActionGraph(configuration, builder, timer);
+  GlobalTimer<TimerClock> timer{};
+  const auto actions = BuildActionGraph(configuration, builder, timer);
   log.LogMessage("Registered " + std::to_string(actions.size()) +
                  " high-frequency actions.");
   RunTimerFor(timer, std::chrono::milliseconds(60));

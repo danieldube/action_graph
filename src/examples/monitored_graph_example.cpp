@@ -11,6 +11,14 @@
 
 namespace action_graph_examples {
 
+using action_graph::GlobalTimer;
+using action_graph::builder::ActionObject;
+using action_graph::builder::BuildActionGraph;
+using action_graph::builder::ConfigurationNode;
+using action_graph::builder::DecorateWithTimingMonitor;
+using action_graph::builder::GenericActionDecorator;
+using action_graph::yaml_cpp_configuration::Node;
+
 void RunMonitoredGraph(ConsoleLog &log) {
   log.LogMessage(
       "=== Example: timer-driven graph monitored by TimingMonitor ===");
@@ -41,21 +49,18 @@ void RunMonitoredGraph(ConsoleLog &log) {
             message: "finish cycle"
 )";
 
-  action_graph::builder::GenericActionDecorator decorator{};
+  GenericActionDecorator decorator{};
   decorator.AddDecoratorFunction(
       "timing_monitor",
-      [&log](const action_graph::builder::ConfigurationNode &node,
-             action_graph::builder::ActionObject action) {
-        return action_graph::builder::DecorateWithTimingMonitor<TimerClock>(
-            node, std::move(action), log);
+      [&log](const ConfigurationNode &node, ActionObject action) {
+        return DecorateWithTimingMonitor<TimerClock>(node, std::move(action),
+                                                     log);
       });
 
-  auto configuration =
-      action_graph::yaml_cpp_configuration::Node::CreateFromString(kYaml);
+  auto configuration = Node::CreateFromString(kYaml);
   auto builder = CreateLoggingActionBuilder(log, std::move(decorator));
-  action_graph::GlobalTimer<TimerClock> timer{};
-  const auto actions =
-      action_graph::builder::BuildActionGraph(configuration, builder, timer);
+  GlobalTimer<TimerClock> timer{};
+  const auto actions = BuildActionGraph(configuration, builder, timer);
   log.LogMessage("Registered " + std::to_string(actions.size()) +
                  " monitored action.");
   RunTimerFor(timer, std::chrono::milliseconds(700));

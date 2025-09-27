@@ -8,12 +8,13 @@ namespace action_graph_examples {
 
 class ConsoleLog;
 
-action_graph::builder::GenericActionBuilder
-CreateLoggingActionBuilder(ConsoleLog &log);
+using action_graph::builder::GenericActionBuilder;
+using action_graph::builder::GenericActionDecorator;
 
-action_graph::builder::GenericActionBuilder
-CreateLoggingActionBuilder(ConsoleLog &log,
-                           action_graph::builder::GenericActionDecorator decorator);
+GenericActionBuilder CreateLoggingActionBuilder(ConsoleLog &log);
+
+GenericActionBuilder CreateLoggingActionBuilder(ConsoleLog &log,
+                                               GenericActionDecorator decorator);
 
 } // namespace action_graph_examples
 

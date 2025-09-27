@@ -7,6 +7,8 @@
 
 namespace action_graph_examples {
 
+using action_graph::yaml_cpp_configuration::Node;
+
 void RunCompositeGraphOnce(ConsoleLog &log) {
   log.LogMessage(
       "=== Example: parallel and sequential graph executed once ===");
@@ -45,8 +47,7 @@ action:
         message: "publish"
 )";
 
-  auto configuration =
-      action_graph::yaml_cpp_configuration::Node::CreateFromString(kYaml);
+  auto configuration = Node::CreateFromString(kYaml);
   auto builder = CreateLoggingActionBuilder(log);
   auto action = builder(configuration);
   log.LogMessage("Executing composite graph once.");
