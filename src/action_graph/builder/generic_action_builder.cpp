@@ -8,6 +8,8 @@
 #include <action_graph/builder/generic_action_builder.h>
 #include <action_graph/parallel_actions.h>
 
+#include <utility>
+
 namespace action_graph {
 namespace builder {
 
@@ -28,6 +30,11 @@ std::vector<ActionObject> BuildActions(const ConfigurationNode &node,
   return actions;
 }
 
+void GenericActionBuilder::SetActionDecorator(
+    GenericActionDecorator decorator) {
+  action_decorator_ = std::move(decorator);
+}
+
 ActionObject
 GenericActionBuilder::operator()(const ConfigurationNode &node) const {
   if (!node.HasKey("action")) {
@@ -45,7 +52,8 @@ GenericActionBuilder::operator()(const ConfigurationNode &node) const {
     throw BuildError("No builder defined for " + action_type + ".");
   }
   const auto &builder_function = builder->second;
-  return builder_function(action, *this);
+  auto built_action = builder_function(action, *this);
+  return action_decorator_(action, std::move(built_action));
 }
 
 void GenericActionBuilder::AddBuilderFunction(
