@@ -5,18 +5,17 @@
 
 add_executable(
   action_graph_examples
-  examples_main.cpp
-  console_log.cpp
-  logging_builder.cpp
-  single_second_example.cpp
-  high_frequency_example.cpp
   composite_graph_example.cpp
-  monitored_graph_example.cpp)
+  console_log.cpp
+  examples_main.cpp
+  high_frequency_example.cpp
+  logging_builder.cpp
+  monitored_graph_example.cpp
+  single_second_example.cpp)
 
 target_link_libraries(
   action_graph_examples
-  PRIVATE action_graph::action_graph
-          action_graph::yaml_cpp_configuration
+  PRIVATE action_graph::action_graph action_graph::yaml_cpp_configuration
           action_graph::file_log)
 
 target_compile_features(action_graph_examples PRIVATE cxx_std_14)

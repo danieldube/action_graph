@@ -1,3 +1,8 @@
+// Copyright (c) 2025 Daniel Dube
+//
+// This file is part of the action_graph library and is licensed under the MIT
+// License. See the LICENSE file in the root directory for full license text.
+
 #include "examples.h"
 
 #include "logging_builder.h"
@@ -11,9 +16,9 @@
 
 namespace action_graph_examples {
 
+using action_graph::GlobalTimer;
 using action_graph::builder::BuildActionGraph;
 using action_graph::yaml_cpp_configuration::Node;
-using action_graph::GlobalTimer;
 
 void RunSingleSecondTriggerExample(ConsoleLog &log) {
   log.LogMessage("=== Example: one action triggered every second ===");
