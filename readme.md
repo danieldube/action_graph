@@ -36,3 +36,137 @@ source ~/python/action_graph/bin/activate
 pip install -r requirements.txt
 pre-commit install
 ```
+
+## Examples
+
+Build the `action_graph_examples` target to see the library in action:
+
+```bash
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --target action_graph_examples
+./build/src/examples/action_graph_examples
+```
+
+Each example uses a small YAML configuration to describe its actions. The
+`log_action` type used below is defined inside the example binary and simply
+writes friendly messages to the console. An optional `delay` field allows the
+examples to emulate long-running work.
+
+### One action triggered every second
+
+Registers a single periodic job with the global timer. The job prints a message
+once per second.
+
+```yaml
+- trigger:
+    name: announce_tick
+    period: 1 seconds
+    action:
+      name: log_tick
+      type: log_action
+      message: "tick"
+```
+
+### Three actions triggered every 10 milliseconds
+
+Shows how multiple triggers can share the same period while remaining
+independent. Each action records a sampling event.
+
+```yaml
+- trigger:
+    name: sensor_one
+    period: 10 milliseconds
+    action:
+      name: capture_sensor_one
+      type: log_action
+      message: "sensor one sampled"
+- trigger:
+    name: sensor_two
+    period: 10 milliseconds
+    action:
+      name: capture_sensor_two
+      type: log_action
+      message: "sensor two sampled"
+- trigger:
+    name: sensor_three
+    period: 10 milliseconds
+    action:
+      name: capture_sensor_three
+      type: log_action
+      message: "sensor three sampled"
+```
+
+### Parallel and sequential graph executed once
+
+Demonstrates a nested action graph: a sequential pipeline that contains a
+parallel fan-out step with its own internal sequence. Because the configuration
+represents a single graph, it is executed directly without registering it on the
+timer.
+
+```yaml
+action:
+  name: content_pipeline
+  type: sequential_actions
+  actions:
+    - action:
+        name: prepare_context
+        type: log_action
+        message: "prepare context"
+    - action:
+        name: load_and_process
+        type: parallel_actions
+        actions:
+          - action:
+              name: load_assets
+              type: log_action
+              message: "load assets"
+          - action:
+              name: process_assets
+              type: sequential_actions
+              actions:
+                - action:
+                    name: decode
+                    type: log_action
+                    message: "decode"
+                - action:
+                    name: enrich
+                    type: log_action
+                    message: "enrich"
+    - action:
+        name: publish
+        type: log_action
+        message: "publish"
+```
+
+### Timer-driven graph decorated with a `TimingMonitor`
+
+Wires a sequence of actions to the timer and decorates it with a
+`TimingMonitor` via the `GenericActionDecorator`. The monitor reports when a
+cycle exceeds its allotted run time or misses its expected trigger.
+
+```yaml
+- trigger:
+    name: monitored_cycle
+    period: 200 milliseconds
+    action:
+      name: monitored_sequence
+      type: sequential_actions
+      decorate:
+        - type: timing_monitor
+          duration_limit: 120 milliseconds
+          expected_period: 200 milliseconds
+      actions:
+        - action:
+            name: start_cycle
+            type: log_action
+            message: "start cycle"
+        - action:
+            name: slow_work
+            type: log_action
+            message: "simulate load"
+            delay: 250 milliseconds
+        - action:
+            name: finish_cycle
+            type: log_action
+            message: "finish cycle"
+```
