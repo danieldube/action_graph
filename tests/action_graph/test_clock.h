@@ -2,9 +2,8 @@
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
-
-#ifndef ACTION_GRAPH_TESTS_ACTION_GRAPH_TEST_CLOCK_H_
-#define ACTION_GRAPH_TESTS_ACTION_GRAPH_TEST_CLOCK_H_
+#ifndef TESTS_ACTION_GRAPH_TEST_CLOCK_H_
+#define TESTS_ACTION_GRAPH_TEST_CLOCK_H_
 
 #include <atomic>
 #include <chrono>
@@ -35,4 +34,4 @@ private:
 };
 // NOLINTEND(*identifier-naming)
 
-#endif // ACTION_GRAPH_TESTS_ACTION_GRAPH_TEST_CLOCK_H_
+#endif // TESTS_ACTION_GRAPH_TEST_CLOCK_H_

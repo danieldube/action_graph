@@ -2,9 +2,8 @@
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
-
-#ifndef ACTION_GRAPH_SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_SEQUENCE_NODE_H_
-#define ACTION_GRAPH_SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_SEQUENCE_NODE_H_
+#ifndef SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_SEQUENCE_NODE_H_
+#define SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_SEQUENCE_NODE_H_
 
 #include <action_graph/builder/configuration_node.h>
 #include <memory>
@@ -68,4 +67,4 @@ private:
 } // namespace native_configuration
 } // namespace action_graph
 
-#endif // ACTION_GRAPH_SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_SEQUENCE_NODE_H_
+#endif // SRC_NATIVE_CONFIGURATION_INCLUDE_NATIVE_CONFIGURATION_SEQUENCE_NODE_H_

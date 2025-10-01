@@ -2,9 +2,8 @@
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
-
-#ifndef ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_ACTION_H_
-#define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_ACTION_H_
+#ifndef SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_ACTION_H_
+#define SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_ACTION_H_
 
 #include <string>
 
@@ -22,4 +21,4 @@ public:
 };
 } // namespace action_graph
 
-#endif // ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_ACTION_H_
+#endif // SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_ACTION_H_

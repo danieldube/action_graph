@@ -2,9 +2,9 @@
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
+#ifndef SRC_FILE_LOG_INCLUDE_FILE_LOG_FILE_LOG_H_
+#define SRC_FILE_LOG_INCLUDE_FILE_LOG_FILE_LOG_H_
 
-#ifndef ACTION_GRAPH_FILE_LOG_H
-#define ACTION_GRAPH_FILE_LOG_H
 #include <action_graph/log.h>
 #include <chrono>
 #include <iomanip>
@@ -48,4 +48,4 @@ private:
     stream_ << CurrentTimeString() << " " << line << std::endl;
   }
 };
-#endif // ACTION_GRAPH_FILE_LOG_H
+#endif // SRC_FILE_LOG_INCLUDE_FILE_LOG_FILE_LOG_H_

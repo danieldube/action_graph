@@ -2,9 +2,8 @@
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
-
-#ifndef ACTION_GRAPH_TESTS_ACTION_GRAPH_BUILDER_CALLBACK_ACTION_H_
-#define ACTION_GRAPH_TESTS_ACTION_GRAPH_BUILDER_CALLBACK_ACTION_H_
+#ifndef TESTS_ACTION_GRAPH_BUILDER_CALLBACK_ACTION_H_
+#define TESTS_ACTION_GRAPH_BUILDER_CALLBACK_ACTION_H_
 
 #include <action_graph/action.h>
 #include <action_graph/builder/configuration_node.h>
@@ -28,4 +27,4 @@ std::unique_ptr<action_graph::Action> CreateCallbackActionFromYaml(
     const action_graph::builder::ConfigurationNode &node,
     std::function<void(const std::string &message)> callback);
 
-#endif // ACTION_GRAPH_TESTS_ACTION_GRAPH_BUILDER_CALLBACK_ACTION_H_
+#endif // TESTS_ACTION_GRAPH_BUILDER_CALLBACK_ACTION_H_
