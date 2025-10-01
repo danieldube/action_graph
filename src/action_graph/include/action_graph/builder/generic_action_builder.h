@@ -2,9 +2,9 @@
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
+#ifndef SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_GENERIC_ACTION_BUILDER_H_
+#define SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_GENERIC_ACTION_BUILDER_H_
 
-#ifndef ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_GENERIC_ACTION_BUILDER_H_
-#define ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_GENERIC_ACTION_BUILDER_H_
 #include <action_graph/builder/builder.h>
 #include <action_graph/builder/generic_action_decorator.h>
 
@@ -36,4 +36,4 @@ std::vector<ActionObject> BuildActions(const ConfigurationNode &node,
 GenericActionBuilder CreateGenericActionBuilderWithDefaultActions();
 } // namespace builder
 } // namespace action_graph
-#endif // ACTION_GRAPH_SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_GENERIC_ACTION_BUILDER_H_
+#endif // SRC_ACTION_GRAPH_INCLUDE_ACTION_GRAPH_BUILDER_GENERIC_ACTION_BUILDER_H_

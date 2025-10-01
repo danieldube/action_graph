@@ -2,9 +2,8 @@
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
-
-#ifndef ACTION_GRAPH_EXAMPLES_EXAMPLES_H
-#define ACTION_GRAPH_EXAMPLES_EXAMPLES_H
+#ifndef SRC_EXAMPLES_EXAMPLES_H_
+#define SRC_EXAMPLES_EXAMPLES_H_
 
 #include "console_log.h"
 
@@ -17,4 +16,4 @@ void RunMonitoredGraph(ConsoleLog &log);
 
 } // namespace action_graph_examples
 
-#endif // ACTION_GRAPH_EXAMPLES_EXAMPLES_H
+#endif // SRC_EXAMPLES_EXAMPLES_H_

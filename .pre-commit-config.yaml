@@ -59,3 +59,8 @@ repos:
     hooks:
       - id: clang-tidy
         args: [ -p=build/compile_commands.json --config-file=.clang-tidy ]
+  - repo: https://github.com/danieldube/cpp_header_guard
+    rev: main
+    hooks:
+      - id: header-guard
+        args: [--spaces-between-endif-and-comment, "1"]

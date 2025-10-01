@@ -2,9 +2,8 @@
 //
 // This file is part of the action_graph library and is licensed under the MIT
 // License. See the LICENSE file in the root directory for full license text.
-
-#ifndef ACTION_GRAPH_TEST_LOG_H
-#define ACTION_GRAPH_TEST_LOG_H
+#ifndef TESTS_ACTION_GRAPH_TEST_LOG_H_
+#define TESTS_ACTION_GRAPH_TEST_LOG_H_
 
 #include <action_graph/log.h>
 #include <string>
@@ -25,4 +24,4 @@ public:
   std::vector<std::string> log;
 };
 
-#endif // ACTION_GRAPH_TEST_LOG_H
+#endif // TESTS_ACTION_GRAPH_TEST_LOG_H_
