@@ -105,6 +105,13 @@ protected:
   }
 };
 
+// Out-of-class definitions for static constexpr members
+constexpr std::chrono::milliseconds SingleActionStressTest::kExecutionDuration;
+constexpr std::chrono::milliseconds SingleActionStressTest::kActionPeriod;
+constexpr std::chrono::milliseconds
+    SingleActionStressTest::kAcceptedOverrunMargin;
+constexpr std::chrono::seconds SingleActionStressTest::kTestDuration;
+
 TEST_F(SingleActionStressTest, TenSeconds) {
   StartStressTestsAsynchronously(kTestDuration);
   ScheduleAction();

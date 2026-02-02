@@ -3,6 +3,8 @@
 # This file is part of the action_graph library and is licensed under the MIT
 # License. See the LICENSE file in the root directory for full license text.
 
+find_package(Threads REQUIRED)
+
 add_library(action_graph ../file_log/include/file_log/file_log.h)
 
 target_sources(
@@ -38,5 +40,7 @@ target_include_directories(action_graph PUBLIC include)
 
 target_compile_features(action_graph PUBLIC cxx_std_14)
 set_target_properties(action_graph PROPERTIES CXX_EXTENSIONS OFF)
+
+target_link_libraries(action_graph PUBLIC Threads::Threads)
 
 add_library(action_graph::action_graph ALIAS action_graph)
